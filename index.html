@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MaggieBump</title>
+  <style>
+    :root{--bg:#fff8f1;
+      --surface:#fff;
+      --surface2:#fff1e5;
+      --text:#2b2320;
+      --muted:#7d6860;
+      --muted2:#a48b80;
+      --border:rgba(92,63,50,.14);
+      --accent:#de8f6e;
+      --accent2:#f3b391;
+      --soft:rgba(222,143,110,.16);
+      --blue:#8bbbd9;
+      --green:#97bd87;
+      --yellow:#e5bd67;
+      --red:#d96f6f;
+      --purple:#b79bd6;
+      --shadow:0 18px 45px rgba(83,50,34,.10);
+      --radius:18px}*{
+        box-sizing:border-box;
+        margin:0;
+        padding:0}body{min-height:100vh;
+          background:radial-gradient(circle at top left,
+          rgba(243,179,145,.35),transparent 30%),
+          radial-gradient(circle at top right,
+          rgba(139,187,217,.28),transparent 28%),
+          linear-gradient(180deg,#fff8f1 0%,
+          #fffaf5 100%);color:var(--text);font-family:"Segoe UI",Inter,system-ui,sans-serif;padding-bottom:90px}.header{position:sticky;top:0;z-index:100;background:rgba(255,248,241,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:18px 22px}.header-content{width:min(1280px,calc(100vw - 28px));margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.logo{font-size:1.8rem;font-weight:900;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}.tab-row{display:flex;gap:8px;flex-wrap:wrap}.tab-btn,.btn,button,input,select,textarea{font:inherit}.tab-btn,.btn,button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:14px;padding:10px 14px;cursor:pointer;font-weight:800;transition:.18s ease}.tab-btn:hover,.btn:hover,button:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(83,50,34,.08)}.tab-btn.active,.btn.primary{background:var(--accent);border-color:transparent;color:white}.app{width:min(1280px,calc(100vw - 28px));margin:22px auto;display:grid;gap:18px}.hero{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.hero h1{font-size:clamp(2rem,4vw,4rem);line-height:1;letter-spacing:-.05em;margin-bottom:10px}.subtitle{color:var(--muted);max-width:720px;line-height:1.6}.page{display:none}.page.active{display:grid;gap:18px}.card,.stat,.record-row,.check-row{background:rgba(255,255,255,.86);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.card{padding:18px}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    h2{font-size:1.1rem;
+      letter-spacing:-.02em}
+    .stats{display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+    .stat{padding:16px;
+      display:grid;gap:8px}
+    .label{color:var(--muted);font-size:.86rem;font-weight:700}
+    .value{font-size:clamp(1.4rem,3vw,2.2rem);
+      font-weight:900;
+      letter-spacing:-.04em}.hint{color:var(--muted2);
+      font-size:.82rem;
+      line-height:1.45}.grid-2{display:grid;
+        grid-template-columns:1fr 1fr;
+       gap:18px}.grid-3{display:grid;
+      grid-template-columns:repeat(3,1fr);gap:14px}input,select,textarea{width:100%;
+       background:#fffaf7;
+       border:1px solid var(--border);
+       border-radius:14px;
+       padding:12px 13px;color:var(--text);
+       outline:none}input:focus,select:focus,textarea:focus{
+       border-color:rgba(222,143,110,.55);
+       box-shadow:0 0 0 4px rgba(222,143,110,.12)}label{
+       display:block;color:var(--muted);
+       font-size:.9rem;
+       font-weight:800;
+      margin-bottom:7px}.form{
+               display:grid;gap:12px}.row{
+                display:grid;grid-template-columns:1fr 1fr;
+                gap:12px}.progress-wrap{
+                 display:grid;gap:8px}.progress-top{display:flex;justify-content:space-between;color:var(--muted);
+                   font-size:.85rem;font-weight:800}.progress{height:14px;background:var(--surface2);border-radius:999px;overflow:hidden;border:1px solid var(--border)}.progress-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}.baby-card{min-height:260px;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at center,rgba(222,143,110,.18),transparent 58%),rgba(255,255,255,.86)}.baby-icon{font-size:5rem;margin-bottom:12px}.record-list,.check-list{display:grid;gap:10px}.record-row{padding:14px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}.record-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:white;font-size:1.25rem;background:var(--accent)}.record-title{font-weight:900}.record-meta{color:var(--muted);font-size:.84rem;margin-top:3px}.record-amount{font-weight:900;white-space:nowrap;color:var(--accent)}.mini-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}.mini-actions button{width:32px;height:32px;padding:0;display:grid;place-items:center;border-radius:10px}.danger{color:var(--red)}.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.category-card{border:1px solid var(--border);border-radius:16px;padding:14px;background:var(--surface);display:grid;gap:8px}.category-emoji{font-size:1.8rem}.category-name{font-weight:900}.category-total{color:var(--accent);font-weight:900}.check-row{padding:13px 14px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}.check-box{width:22px;height:22px;border-radius:7px;border:2px solid var(--accent);display:grid;place-items:center;cursor:pointer;color:white;font-weight:900}.check-row.done .check-box{background:var(--accent)}.check-row.done .check-text{text-decoration:line-through;color:var(--muted2)}.modal-backdrop{display:none;position:fixed;inset:0;z-index:1000;background:rgba(43,35,32,.35);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px}.modal-backdrop.open{display:flex}.modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:18px}.modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:14px}.floating-add-btn{position:fixed;right:26px;bottom:26px;z-index:900;width:64px;height:64px;border-radius:50%;background:var(--accent);color:white;border:0;font-size:2rem;box-shadow:0 18px 35px rgba(222,143,110,.28)}.quick-menu{position:fixed;right:26px;bottom:100px;z-index:900;display:none;gap:10px;flex-direction:column;align-items:flex-end}.quick-menu.open{display:flex}.quick-item{display:flex;align-items:center;gap:10px;background:transparent;border:0}.quick-label{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:9px 12px;box-shadow:var(--shadow);font-weight:900}.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--accent);font-weight:900;font-size:.82rem}.empty{padding:18px;border:1px dashed var(--border);border-radius:16px;text-align:center;color:var(--muted)}canvas{width:100%;height:300px;display:block}.mobile-nav{display:none}@media(max-width:900px){.tab-row{display:none}.mobile-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:10px;right:10px;bottom:10px;z-index:950;padding:8px;border:1px solid var(--border);border-radius:18px;background:rgba(255,248,241,.9);backdrop-filter:blur(16px);gap:6px}.mobile-nav .tab-btn{padding:10px 4px;font-size:.72rem}.stats,.grid-2,.grid-3,.category-grid,.row{grid-template-columns:1fr}.floating-add-btn{bottom:86px}.quick-menu{bottom:160px}}
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-content">
+    <div class="logo">MaggieBump</div>
+  <nav class="tab-row">
+    <button class="tab-btn active" data-page="homePage">Home</button>
+    <button class="tab-btn" data-page="fundPage">Funds</button>
+    <button class="tab-btn" data-page="expensePage">Expenses</button>
+    <button class="tab-btn" data-page="appointmentPage">Appointments</button>
+    <button class="tab-btn" data-page="notesPage">Notes</button>
+  </nav>
+</div>
+</header>
+
+<nav class="mobile-nav">
+  <button class="tab-btn active" data-page="homePage">Home</button>
+  <button class="tab-btn" data-page="fundPage">Funds</button>
+  <button class="tab-btn" data-page="expensePage">Costs</button>
+  <button class="tab-btn" data-page="appointmentPage">Appts</button>
+  <button class="tab-btn" data-page="notesPage">Notes</button></nav>
+<main class="app">
+<section class="hero"><div><h1>Pregnancy, savings, and expenses in one place.</h1>
+  <p class="subtitle">Track the due date, funds, appointments, notes, and every peso spent.</p>
+</div><span class="pill">Estimated due date: Jan 15, 2027</span>
+</section>
+<section id="homePage" class="page active">
+  <section class="stats"><div class="stat">
+    <div class="label">Due Date Countdown</div>
+    <div class="value" id="daysLeft">—</div>
+    <div class="hint" id="dueDateText">Due date is fixed from ultrasound.</div>
+  </div>
+    <div class="stat"><div class="label">Pregnancy Week</div>
+    <div class="value" id="pregnancyWeek">—</div>
+    <div class="hint" id="trimesterText">Trimester will appear here.</div>
+  </div>
+    <div class="stat">
+      <div class="label">Total Saved</div>
+      <div class="value" id="homeSaved">₱0</div>
+      <div class="hint">Across pregnancy + hospital fund.</div>
+    </div>
+      <div class="stat">
+        <div class="label">Total Expenses</div><div class="value" id="homeExpenses">₱0</div>
+        <div class="hint">All pregnancy-related costs.</div>
+      </div>
+      </section>
+        <section class="grid-2">
+          <div class="card baby-card"><div><div class="baby-icon" id="babyIcon">🌱</div><h2 id="babySizeTitle">Baby size</h2>
+          <p class="subtitle" id="babySizeText">Pregnancy age is calculated from the fixed due date.</p>
+        </div>
+        </div>
+        
+        <div class="card">
+          <div class="toolbar">
+          <h2>Next Appointment</h2>
+          <button class="btn" onclick="openAppointmentModal()">Add</button>
+        </div>
+          <div id="nextAppointmentBox" class="empty">No upcoming appointments yet.</div>
+        </div></section>
+          <section class="card">
+            <div class="toolbar">
+            <h2>Ultrasound Details</h2>
+            <span class="pill">Fixed record</span>
+          </div><section class="stats"><div class="stat">
+            <div class="label">Ultrasound Date</div>
+            <div class="value">May 29</div>
+            <div class="hint">2026</div>
+          </div>
+            <div class="stat"><div class="label">Age by CRL</div>
+            <div class="value">7w 0d</div>
+            <div class="hint">CRL: 1.0 cm</div>
+          </div>
+            <div class="stat"><div class="label">Fetal Heart Rate
+
+            </div>
+            <div class="value">131</div><div class="hint">beats/min</div>
+          </div>
+            <div class="stat">
+              <div class="label">Impression</div><div class="value">Live</div>
+              <div class="hint">Singleton uterine pregnancy</div>
+            </div>
+          </section>
+
+            <p class="subtitle" style="margin-top:12px">LMP shown: April 6, 2026. Sex date noted: April 22, 2026. Due date used in this app: January 15, 2027, calculated from 7w0d by CRL on May 29, 2026.</p></section><section class="grid-2"><div class="card"><div class="toolbar"><h2>Fund Progress</h2><button class="btn" onclick="setPage('fundPage')">Open funds</button></div><div class="form"><div class="progress-wrap"><div class="progress-top"><span>Pregnancy Fund</span><span id="pregFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="pregFundProgress"></div></div></div><div class="progress-wrap"><div class="progress-top"><span>Hospital Bill Fund</span><span id="hospitalFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="hospitalFundProgress"></div></div></div></div></div><div class="card"><div class="toolbar"><h2>Recent Expenses</h2><button class="btn" onclick="openExpenseModal()">Add</button></div><div id="recentExpensesList" class="record-list"></div></div></section></section>
+<section id="fundPage" class="page">
+  <section class="stats"><div class="stat">
+    <div class="label">Pregnancy Goal</div>
+    <div class="value" id="pregnancyGoalValue">₱0</div>
+    <div class="hint">For checkups, vitamins, labs, food, and transport.</div>
+  </div><div class="stat">
+    <div class="label">Hospital Goal</div>
+  <div class="value" id="hospitalGoalValue">₱0</div>
+  <div class="hint">For delivery, hospital bill, emergency buffer.</div>
+</div>
+  <div class="stat">
+    <div class="label">Remaining Needed</div><div class="value" id="remainingNeeded">₱0</div>
+    <div class="hint">Total goal minus current saved.</div>
+  </div>
+  <div class="stat">
+    <div class="label">Suggested Weekly Save</div>
+  <div class="value" id="weeklySave">₱0</div>
+  <div class="hint">Based on weeks left until due date.</div>
+</div>
+<div class="stat">
+  <div class="label">Suggested Monthly Save</div>
+<div class="value" id="monthlySave">₱0</div>
+<div class="hint">Based on months left until due date.</div></div>
+</section>
+<section class="grid-2">
+  <div class="card">
+  <div class="toolbar"><h2>Update Fund Goals</h2>
+  <button class="btn primary" type="button" onclick="openFundDepositModal()">Add Money</button>
+</div>
+  <form class="form" id="fundForm">
+    <div class="row"><div><label>Pregnancy fund goal</label>
+      <input id="pregnancyGoalInput" type="number" step="0.01" placeholder="Ex. 30000">
+    </div>
+      <div>
+        <label>Hospital bill fund goal</label>
+        <input id="hospitalGoalInput" type="number" step="0.01" placeholder="Ex. 80000"></div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Pregnancy fund saved</label>
+          <input id="pregnancySavedInput" type="number" step="0.01" placeholder="Ex. 5000">
+        </div>
+          <div><label>Hospital fund saved</label>
+            <input id="hospitalSavedInput" type="number" step="0.01" placeholder="Ex. 10000"></div>
+          </div><button class="btn primary" type="submit">Save fund settings</button>
+        </form>
+        </div><div class="card">
+          <div class="toolbar">
+          <h2>Savings Plan</h2>
+        </div>
+        <div class="form"><div class="progress-wrap">
+          <div class="progress-top"><span>Pregnancy Fund</span>
+            <span id="fundPagePregLabel">₱0 / ₱0</span></div>
+            <div class="progress"><div class="progress-fill" id="fundPagePregProgress"></div>
+          </div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span>Hospital Fund</span>
+            <span id="fundPageHospitalLabel">₱0 / ₱0</span>
+          </div>
+          <div class="progress"><div class="progress-fill" id="fundPageHospitalProgress"></div>
+        </div>
+      </div>
+        <p class="subtitle" id="savingsAdvice">Fund goals are ready. Add saved amounts to see progress.</p>
+      </div>
+    </div>
+    </section>
+    </section>
+
+<section id="expensePage" class="page">
+  <section class="stats"><div class="stat">
+    <div class="label">Total Expenses</div>
+    <div class="value" id="expenseTotal">₱0</div>
+    <div class="hint">All pregnancy expenses.</div>
+  </div>
+  <div class="stat"><div class="label">Biggest Category</div>
+  <div class="value" id="biggestCategory">—</div>
+  <div class="hint">Where most money is going.</div>
+</div><div class="stat"><div class="label">This Month</div>
+<div class="value" id="thisMonthExpense">₱0</div>
+<div class="hint">Expenses dated this month.</div>
+</div>
+<div class="stat"><div class="label">Records</div>
+<div class="value" id="expenseCount">0</div><div class="hint">Number of logged costs.</div>
+</div>
+</section>
+
+<section class="card"><div class="toolbar"><h2>Expenses by Category</h2>
+  <button class="btn primary" onclick="openExpenseModal()">Add Expense</button>
+</div>
+  <div id="categorySummary" class="category-grid">
+
+  </div>
+</section>
+  <section class="grid-2">
+    <div class="card">
+    <div class="toolbar">
+    <h2>Expense Chart</h2>
+  </div>
+  <canvas id="expenseChart"></canvas>
+  </div>
+    <div class="card">
+      
+      <div class="toolbar">
+      <h2>All Expense Records</h2>
+    </div><div id="expensesList" class="record-list">
+
+    </div>
+  </div>
+  </section>
+  </section>
+<section id="appointmentPage" class="page">
+  <section class="card"><div class="toolbar"><h2>Appointments</h2>
+    <button class="btn primary" onclick="openAppointmentModal()">Add Appointment</button></div><div id="appointmentsList" class="record-list"></div></section></section>
+<section id="notesPage" class="page">
+  <section class="grid-2"><div class="card"><div class="toolbar"><h2>Notes</h2>
+    <button class="btn primary" onclick="openNoteModal()">Add Note</button></div><div id="notesList" class="record-list"></div></div><div class="card"><div class="toolbar"><h2>Preparation Checklists</h2><select id="checklistType" onchange="render()"><option value="prepare">Things to prepare</option><option value="hospital">Hospital bag</option><option value="baby">Baby essentials</option></select></div><div id="checklist" class="check-list"></div></div></section></section>
+</main>
+<div class="quick-menu" id="quickMenu">
+  <button class="quick-item" onclick="openExpenseModal()"><span class="quick-label">Add Expense</span></button><button class="quick-item" onclick="openAppointmentModal()"><span class="quick-label">Add Appointment</span></button><button class="quick-item" onclick="openNoteModal()"><span class="quick-label">Add Note</span></button></div><button class="floating-add-btn" onclick="toggleQuick()">+</button>
+
+  <div class="modal-backdrop" id="fundDepositModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add money to fund</h2>
+      <button onclick="closeModal('fundDepositModal')">Close</button>
+    </div>
+
+    <form class="form" id="fundDepositForm">
+      <div class="row">
+        <div>
+          <label>Which fund?</label>
+          <select id="fundDepositType">
+            <option value="pregnancy">Pregnancy Fund</option>
+            <option value="hospital">Hospital Bill Fund</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Amount to add</label>
+          <input id="fundDepositAmount" type="number" step="0.01" placeholder="0.00" required>
+        </div>
+      </div>
+
+      <div>
+        <label>Note</label>
+        <input id="fundDepositNote" placeholder="Ex. Saved from salary">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" type="button" onclick="closeModal('fundDepositModal')">Cancel</button>
+        <button class="btn primary" type="submit">Add money</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <div class="modal-backdrop" id="expenseModal">
+  <div class="modal">
+  <div class="modal-header"><h2 id="expenseModalTitle">Add expense</h2><button onclick="closeModal('expenseModal')">Close</button></div><form class="form" id="expenseForm"><input id="editingExpenseId" type="hidden"><div class="row"><div><label>Date</label><input id="expenseDate" type="date" required></div><div><label>Amount</label><input id="expenseAmount" type="number" step="0.01" required placeholder="0.00"></div></div><div class="row"><div><label>Category</label><select id="expenseCategory"></select></div><div><label>Paid by</label><select id="expensePaidBy"><option>Ryan</option><option>Maggie</option><option>Family</option><option>Shared</option><option>Other</option></select></div></div><div><label>Item / description</label><input id="expenseDescription" placeholder="Ex. OB checkup, ultrasound, vitamins"></div><div><label>Notes</label><textarea id="expenseNotes" rows="4" placeholder="Optional notes"></textarea></div><div class="modal-actions"><button class="btn" type="button" onclick="closeModal('expenseModal')">Cancel</button><button class="btn primary" type="submit">Save expense</button></div></form></div></div>
+<div class="modal-backdrop" id="appointmentModal"><div class="modal"><div class="modal-header"><h2 id="appointmentModalTitle">Add appointment</h2><button onclick="closeModal('appointmentModal')">Close</button></div><form class="form" id="appointmentForm"><input id="editingAppointmentId" type="hidden"><div class="row"><div><label>Date</label><input id="appointmentDate" type="date" required></div><div><label>Time</label><input id="appointmentTime" type="time"></div></div><div class="row"><div><label>Type</label><select id="appointmentType"><option>OB Checkup</option><option>Ultrasound</option><option>Lab Test</option><option>Hospital Visit</option><option>Other</option></select></div><div><label>Doctor / clinic</label><input id="appointmentDoctor" placeholder="Clinic or doctor"></div></div><div><label>Notes / instructions</label><textarea id="appointmentNotes" rows="4" placeholder="Questions, results, reminders"></textarea></div><div class="modal-actions"><button class="btn" type="button" onclick="closeModal('appointmentModal')">Cancel</button><button class="btn primary" type="submit">Save appointment</button></div></form></div></div>
+<div class="modal-backdrop" id="noteModal"><div class="modal"><div class="modal-header"><h2 id="noteModalTitle">Add note</h2><button onclick="closeModal('noteModal')">Close</button></div><form class="form" id="noteForm"><input id="editingNoteId" type="hidden"><div class="row"><div><label>Date</label><input id="noteDate" type="date" required></div><div><label>Type</label><select id="noteType"><option>Symptom</option><option>Question for OB</option><option>Baby update</option><option>Mom update</option><option>Important warning</option><option>Personal thought</option></select></div></div><div><label>Title</label><input id="noteTitle" placeholder="Short title"></div><div><label>Note</label><textarea id="noteBody" rows="6" placeholder="Write anything important here"></textarea></div><div class="modal-actions"><button class="btn" type="button" onclick="closeModal('noteModal')">Cancel</button><button class="btn primary" type="submit">Save note</button></div></form></div></div>
+<script type="module">
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  onValue
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyDAvvqLF4aVQV5uQmLN8_FuJvnkDMAZeRI",
+  authDomain: "maggiebump-454ea.firebaseapp.com",
+  databaseURL: "https://maggiebump-454ea-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "maggiebump-454ea",
+  storageBucket: "maggiebump-454ea.firebasestorage.app",
+  messagingSenderId: "82266192471",
+  appId: "1:82266192471:web:972c8f9590df9f15c90112"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+const cloudDataRef = ref(db, "maggieBump/main");
+
+let cloudReady = false;
+
+const DATA_KEY='bumptrack-data-v1';
+
+const PREGNANCY = {
+  conceptionDate: '2026-04-22',
+  lmpDate: '2026-04-06',
+  ultrasoundDate: '2026-05-29',
+  ultrasoundAgeWeeks: 7,
+  ultrasoundAgeDays: 0,
+  fetalHeartRate: 131,
+  crlCm: 1.0,
+  gestationalSacCm: 0.3,
+  cervicalLengthCm: 3.2,
+  dueDate: '2027-01-15',
+  sourceNote: 'Due date estimated from ultrasound CRL: 7 weeks 0 days on May 29, 2026.'
+};const expenseCategories=[{name:'OB Checkups',
+icon:'🩺',color:'#de8f6e'},{name:'Ultrasound',
+icon:'🖥️',color:'#8bbbd9'},{name:'Vitamins & Medicine',
+icon:'💊',color:'#97bd87'},{name:'Lab Tests',
+icon:'🧪',color:'#b79bd6'},{name:'Food & Cravings',
+icon:'🍲',color:'#e5bd67'},{name:'Transportation',
+icon:'🚌',
+color:'#91a8d0'},{name:'Maternity Clothes',
+icon:'👗',color:'#d89ac8'},{name:'Baby Items',
+icon:'🍼',color:'#9bc9c2'},{name:'Hospital Bill',
+icon:'🏥',
+color:'#d96f6f'},{name:'Emergency',icon:'🚨',color:'#c95b5b'},{name:'Other',icon:'☰',color:'#a48b80'}];
+const babySizes=['poppy seed','sesame seed','lentil','blueberry','raspberry','grape','kumquat','fig','lime','peach','lemon','apple','avocado','pear','mango','banana','carrot','papaya','eggplant','corn','coconut','butternut squash','cabbage','pineapple','lettuce','cauliflower','small pumpkin','watermelon'];
+const checklistTemplates={prepare:['Decide where to give birth','Estimate hospital bill and emergency buffer','Save weekly for pregnancy and hospital funds','Prepare government/insurance documents','Plan who will go with mom during delivery','List emergency contacts','Prepare transportation plan to hospital'],hospital:['Mom clothes and underwear','Baby clothes','Blanket and swaddle','Diapers and wipes','Toiletries','Phone charger','IDs and documents','Cash and cards','Snacks and water'],baby:['Newborn clothes','Diapers','Baby wipes','Blankets','Baby bottles','Baby soap/shampoo','Thermometer','Cotton balls','Changing mat','Baby towel']};
+let data=loadData();
+function defaultData(){return{settings:{dueDate:PREGNANCY.dueDate,lmp:PREGNANCY.lmpDate,momName:'Maggie',
+pregnancyGoal:30000,
+hospitalGoal:80000,
+pregnancySaved:0,
+hospitalSaved:0},
+expenses:[],
+appointments:[],
+notes:[],
+checklist:{}}}
+function loadData(){try{return JSON.parse(localStorage.getItem(DATA_KEY))||defaultData()}catch{return defaultData()}}
+function syncFixedPregnancy(){
+  if (!data) data = defaultData();
+
+  if (!data.settings) data.settings = defaultData().settings;
+  if (!Array.isArray(data.expenses)) data.expenses = [];
+  if (!Array.isArray(data.appointments)) data.appointments = [];
+  if (!Array.isArray(data.notes)) data.notes = [];
+  if (!data.checklist) data.checklist = {};
+
+  data.settings.dueDate = PREGNANCY.dueDate;
+  data.settings.lmp = PREGNANCY.lmpDate;
+  data.settings.momName = 'Maggie';
+}
+function saveData(){
+  syncFixedPregnancy();
+
+  localStorage.setItem(DATA_KEY, JSON.stringify(data));
+
+  if (cloudReady) {
+    set(cloudDataRef, data);
+  }
+}
+function uid(p='id'){return `${p}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`}
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function parseLocalDate(v){if(!v)return null;const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)}
+function formatDate(v){const d=parseLocalDate(v);if(!d)return 'No date';return d.toLocaleDateString('en-US',{month:'long',day:'2-digit',year:'numeric'})}
+function money(v){return new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(v)||0)}
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
+function escapeHtml(v){return String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+function setPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));render()}document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function toggleQuick(){document.getElementById('quickMenu').classList.toggle('open')}
+function openFundDepositModal(){
+  fundDepositType.value = 'pregnancy';
+  fundDepositAmount.value = '';
+  fundDepositNote.value = '';
+  openModal('fundDepositModal');
+}
+function openExpenseModal(
+  id=''){const item=data.expenses.find(e=>e.id===id);expenseModalTitle.textContent=item?'Edit expense':'Add expense';editingExpenseId.value=item?.id||'';expenseDate.value=item?.date||todayISO();expenseAmount.value=item?.amount||'';expenseCategory.value=item?.category||expenseCategories[0].name;expensePaidBy.value=item?.paidBy||'Me';expenseDescription.value=item?.description||'';expenseNotes.value=item?.notes||'';openModal('expenseModal');quickMenu.classList.remove('open')}
+function openAppointmentModal(id=''){const item=data.appointments.find(a=>a.id===id);appointmentModalTitle.textContent=item?'Edit appointment':'Add appointment';editingAppointmentId.value=item?.id||'';appointmentDate.value=item?.date||todayISO();appointmentTime.value=item?.time||'';appointmentType.value=item?.type||'OB Checkup';appointmentDoctor.value=item?.doctor||'';appointmentNotes.value=item?.notes||'';openModal('appointmentModal');quickMenu.classList.remove('open')}
+function openNoteModal(
+  id=''){const item=data.notes.find(n=>n.id===id);noteModalTitle.textContent=item?'Edit note':'Add note';editingNoteId.value=item?.id||'';noteDate.value=item?.date||todayISO();noteType.value=item?.type||'Symptom';noteTitle.value=item?.title||'';noteBody.value=item?.body||'';openModal('noteModal');quickMenu.classList.remove('open')}
+function deleteExpense(id){if(!confirm('Delete this expense?'))return;data.expenses=data.expenses.filter(e=>e.id!==id);saveData();render()}
+function deleteAppointment(id){if(!confirm('Delete this appointment?'))return;data.appointments=data.appointments.filter(a=>a.id!==id);saveData();render()}
+function deleteNote(id){if(!confirm('Delete this note?'))return;data.notes=data.notes.filter(n=>n.id!==id);saveData();render()}
+fundDepositForm.addEventListener('submit',e=>{
+  e.preventDefault();
+
+  const amount = Number(fundDepositAmount.value) || 0;
+  if (!amount) return;
+
+  if (fundDepositType.value === 'pregnancy') {
+    data.settings.pregnancySaved = Number(data.settings.pregnancySaved || 0) + amount;
+  } else {
+    data.settings.hospitalSaved = Number(data.settings.hospitalSaved || 0) + amount;
+  }
+
+  saveData();
+  closeModal('fundDepositModal');
+  render();
+});
+fundForm.addEventListener('submit',e=>{e.preventDefault();data.settings.pregnancyGoal=Number(pregnancyGoalInput.value)||0;data.settings.hospitalGoal=Number(hospitalGoalInput.value)||0;data.settings.pregnancySaved=Number(pregnancySavedInput.value)||0;data.settings.hospitalSaved=Number(hospitalSavedInput.value)||0;saveData();render()});expenseForm.addEventListener('submit',e=>{e.preventDefault();const id=editingExpenseId.value||uid('expense');const item={id,date:expenseDate.value,amount:Number(expenseAmount.value)||0,category:expenseCategory.value,paidBy:expensePaidBy.value,description:expenseDescription.value.trim(),notes:expenseNotes.value.trim(),createdAt:Date.now()};const i=data.expenses.findIndex(e=>e.id===id);if(i>=0)data.expenses[i]=item;else data.expenses.push(item);saveData();closeModal('expenseModal');render()});appointmentForm.addEventListener('submit',e=>{e.preventDefault();const id=editingAppointmentId.value||uid('appt');const item={id,date:appointmentDate.value,time:appointmentTime.value,type:appointmentType.value,doctor:appointmentDoctor.value.trim(),notes:appointmentNotes.value.trim(),createdAt:Date.now()};const i=data.appointments.findIndex(a=>a.id===id);if(i>=0)data.appointments[i]=item;else data.appointments.push(item);saveData();closeModal('appointmentModal');render()});noteForm.addEventListener('submit',e=>{e.preventDefault();const id=editingNoteId.value||uid('note');const item={id,date:noteDate.value,type:noteType.value,title:noteTitle.value.trim(),body:noteBody.value.trim(),createdAt:Date.now()};const i=data.notes.findIndex(n=>n.id===id);if(i>=0)data.notes[i]=item;else data.notes.push(item);saveData();closeModal('noteModal');render()});
+function getPregnancyInfo(){const due=parseLocalDate(PREGNANCY.dueDate);
+  const today=new Date();today.setHours(0,0,0,0);due.setHours(0,0,0,0);
+  const daysLeft=Math.ceil((due-today)/86400000);
+  const safeDays=Math.max(0,Math.min(280,280-daysLeft));
+  const week=Math.floor(safeDays/7);
+  const day=safeDays%7;let trimester='First trimester';if(week>=28)trimester='Third trimester';else if(week>=14)trimester='Second trimester';return{daysLeft,week,day,trimester}}
+  function percent(c,g){return g?Math.max(0,Math.min(100,(Number(c)/Number(g))*100)):0}
+  function updateProgress(id,c,g){const el=document.getElementById(id);if(el)el.style.width=percent(c,g)+'%'}
+  function sortNewest(a,b){return `${b.date||''}${b.createdAt||''}`.localeCompare(`${a.date||''}${a.createdAt||''}`)}
+  function categoryTotals(){const t={};data.expenses.forEach(e=>t[e.category]=(t[e.category]||0)+Number(e.amount||0));return t}
+function render(){renderSelects();renderHome();renderFunds();renderExpenses();renderAppointments();renderNotes();renderChecklist();renderExpenseChart()}
+function renderSelects(){if(expenseCategory&&!expenseCategory.children.length)expenseCategory.innerHTML=expenseCategories.map(c=>`<option>${c.name}</option>`).join('')}
+function renderHome(){const info=getPregnancyInfo(),totalExpenses=data.expenses.reduce((s,e)=>s+Number(e.amount||0),0),totalSaved=Number(data.settings.pregnancySaved||0)+Number(data.settings.hospitalSaved||0);if(!info){setText('daysLeft','—');setText('dueDateText','Due date is fixed from ultrasound.');setText('pregnancyWeek','—');setText('trimesterText','Trimester will appear here.');setText('babySizeTitle','Baby size');setText('babySizeText','Pregnancy age is calculated from the fixed due date.');setText('babyIcon','🌱')}else{setText('daysLeft',info.daysLeft>=0?`${info.daysLeft} days`:`${Math.abs(info.daysLeft)} days past`);setText('dueDateText',`Estimated due date: ${formatDate(PREGNANCY.dueDate)}`);setText('pregnancyWeek',`${info.week}w ${info.day}d`);setText('trimesterText',info.trimester);const idx=Math.max(0,Math.min(babySizes.length-1,Math.floor((info.week-4)/1.2)));setText('babySizeTitle',`Around week ${info.week}`);setText('babySizeText',`Baby is roughly comparable to a ${babySizes[idx]||'small fruit'} right now. Ultrasound record: CRL ${PREGNANCY.crlCm} cm, fetal heart rate ${PREGNANCY.fetalHeartRate} bpm, cervical length ${PREGNANCY.cervicalLengthCm} cm.`);setText('babyIcon',info.week<14?'🌱':info.week<28?'🍋':'👶')}setText('homeSaved',money(totalSaved));setText('homeExpenses',money(totalExpenses));updateProgress('pregFundProgress',data.settings.pregnancySaved,data.settings.pregnancyGoal);updateProgress('hospitalFundProgress',data.settings.hospitalSaved,data.settings.hospitalGoal);setText('pregFundLabel',`${money(data.settings.pregnancySaved)} / ${money(data.settings.pregnancyGoal)}`);setText('hospitalFundLabel',`${money(data.settings.hospitalSaved)} / ${money(data.settings.hospitalGoal)}`);const upcoming=data.appointments.filter(a=>a.date>=todayISO()).sort((a,b)=>`${a.date}T${a.time||''}`.localeCompare(`${b.date}T${b.time||''}`))[0];if(upcoming){nextAppointmentBox.className='record-row';nextAppointmentBox.innerHTML=`<div class="record-icon">📅</div><div><div class="record-title">${escapeHtml(upcoming.type)}</div><div class="record-meta">${formatDate(upcoming.date)} ${upcoming.time||''}<br>${escapeHtml(upcoming.doctor||'No clinic/doctor added')}</div></div><span class="pill">Next</span>`}else{nextAppointmentBox.className='empty';nextAppointmentBox.textContent='No upcoming appointments yet.'}renderRecordList('recentExpensesList',data.expenses.slice().sort(sortNewest).slice(0,5),'expense')}
+function renderFunds(){const totalGoal=Number(data.settings.pregnancyGoal||0)+Number(data.settings.hospitalGoal||0),totalSaved=Number(data.settings.pregnancySaved||0)+Number(data.settings.hospitalSaved||0),remaining=Math.max(0,totalGoal-totalSaved),info=getPregnancyInfo(),weeksLeft=info?Math.max(1,Math.ceil(info.daysLeft/7)):0,
+  weekly=weeksLeft?remaining/weeksLeft:0,monthsLeft=weeksLeft?Math.max(1,weeksLeft/4.345):0,monthly=monthsLeft?remaining/monthsLeft:0;setText('pregnancyGoalValue',money(data.settings.pregnancyGoal));setText('hospitalGoalValue',money(data.settings.hospitalGoal));setText('remainingNeeded',money(remaining));setText('weeklySave',money(weekly));
+  setText('monthlySave',money(monthly));
+  pregnancyGoalInput.value=data.settings.pregnancyGoal||'';hospitalGoalInput.value=data.settings.hospitalGoal||'';pregnancySavedInput.value=data.settings.pregnancySaved||'';hospitalSavedInput.value=data.settings.hospitalSaved||'';updateProgress('fundPagePregProgress',data.settings.pregnancySaved,data.settings.pregnancyGoal);updateProgress('fundPageHospitalProgress',data.settings.hospitalSaved,data.settings.hospitalGoal);setText('fundPagePregLabel',`${money(data.settings.pregnancySaved)} / ${money(data.settings.pregnancyGoal)}`);setText('fundPageHospitalLabel',`${money(data.settings.hospitalSaved)} / ${money(data.settings.hospitalGoal)}`);setText('savingsAdvice',info?`You have about ${weeksLeft} week(s) left. Save around ${money(weekly)} per week to hit both goals.`:'Fund goals are ready. Add saved amounts to see progress.')}
+function renderExpenses(){const total=data.expenses.reduce((s,e)=>s+Number(e.amount||0),0),month=todayISO().slice(0,7),monthTotal=data.expenses.filter(e=>(e.date||'').startsWith(month)).reduce((s,e)=>s+Number(e.amount||0),0),by=categoryTotals(),big=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];setText('expenseTotal',money(total));setText('thisMonthExpense',money(monthTotal));setText('expenseCount',data.expenses.length);setText('biggestCategory',big?big[0]:'—');categorySummary.innerHTML=expenseCategories.map(c=>`<div class="category-card"><div class="category-emoji">${c.icon}</div><div class="category-name">${c.name}</div><div class="category-total">${money(by[c.name]||0)}</div></div>`).join('');renderRecordList('expensesList',data.expenses.slice().sort(sortNewest),'expense')}
+function renderAppointments(){renderRecordList('appointmentsList',data.appointments.slice().sort((a,b)=>`${a.date}T${a.time||''}`.localeCompare(`${b.date}T${b.time||''}`)),'appointment')}
+function renderNotes(){renderRecordList('notesList',data.notes.slice().sort(sortNewest),'note')}
+function renderChecklist(){const type=checklistType.value;if(!data.checklist[type]){data.checklist[type]=checklistTemplates[type].map(text=>({id:uid('check'),text,done:false}));saveData()}checklist.innerHTML=data.checklist[type].map(item=>`<div class="check-row ${item.done?'done':''}"><div class="check-box" onclick="toggleCheck('${type}','${item.id}')">${item.done?'✓':''}</div><div class="check-text">${escapeHtml(item.text)}</div><button class="danger" onclick="deleteCheck('${type}','${item.id}')">×</button></div>`).join('')+`<div class="row"><input id="newCheckInput" placeholder="Add custom checklist item"><button class="btn primary" onclick="addCheck('${type}')">Add</button></div>`}
+function toggleCheck(type,id){const item=data.checklist[type].find(i=>i.id===id);if(item)item.done=!item.done;saveData();renderChecklist()}
+function addCheck(type){const text=newCheckInput.value.trim();if(!text)return;data.checklist[type].push({id:uid('check'),text,done:false});saveData();renderChecklist()}
+function deleteCheck(type,id){data.checklist[type]=data.checklist[type].filter(i=>i.id!==id);saveData();renderChecklist()}
+function renderRecordList(id,items,type){const box=document.getElementById(id);if(!box)return;if(!items.length){box.innerHTML='<div class="empty">Nothing added yet.</div>';return}box.innerHTML=items.map(item=>{if(type==='expense'){const cat=expenseCategories.find(c=>c.name===item.category)||expenseCategories.at(-1);return `<div class="record-row"><div class="record-icon" style="background:${cat.color}">${cat.icon}</div><div><div class="record-title">${escapeHtml(item.description||item.category)}</div><div class="record-meta">${formatDate(item.date)} · ${escapeHtml(item.category)} · Paid by ${escapeHtml(item.paidBy||'—')}</div>${item.notes?`<div class="record-meta">${escapeHtml(item.notes)}</div>`:''}<div class="mini-actions"><button onclick="openExpenseModal('${item.id}')">✎</button><button class="danger" onclick="deleteExpense('${item.id}')">×</button></div></div><div class="record-amount">${money(item.amount)}</div></div>`}if(type==='appointment')return `<div class="record-row"><div class="record-icon">📅</div><div><div class="record-title">${escapeHtml(item.type)}</div><div class="record-meta">${formatDate(item.date)} ${item.time||''} · ${escapeHtml(item.doctor||'No clinic/doctor')}</div>${item.notes?`<div class="record-meta">${escapeHtml(item.notes)}</div>`:''}<div class="mini-actions"><button onclick="openAppointmentModal('${item.id}')">✎</button><button class="danger" onclick="deleteAppointment('${item.id}')">×</button></div></div><span class="pill">${item.date>=todayISO()?'Upcoming':'Done'}</span></div>`;return `<div class="record-row"><div class="record-icon">📝</div><div><div class="record-title">${escapeHtml(item.title||item.type)}</div><div class="record-meta">${formatDate(item.date)} · ${escapeHtml(item.type)}</div>${item.body?`<div class="record-meta">${escapeHtml(item.body)}</div>`:''}<div class="mini-actions"><button onclick="openNoteModal('${item.id}')">✎</button><button class="danger" onclick="deleteNote('${item.id}')">×</button></div></div><span class="pill">Note</span></div>`}).join('')}
+function renderExpenseChart(){const canvas=document.getElementById('expenseChart');if(!canvas)return;
+const rect=canvas.getBoundingClientRect();canvas.width=rect.width*devicePixelRatio;canvas.height=rect.height*devicePixelRatio;
+const ctx=canvas.getContext('2d');ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.clearRect(0,0,rect.width,rect.height);
+const totals=Object.entries(categoryTotals()).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);if(!totals.length){ctx.fillStyle='#7d6860';ctx.font='14px Segoe UI';ctx.fillText('No expenses yet.',20,40);return}const max=Math.max(...totals.map(x=>x[1])),left=120,right=rect.width-30,barH=22,gap=12;totals.forEach(([name,amount],i)=>{const cat=expenseCategories.find(c=>c.name===name)||expenseCategories.at(-1),y=30+i*(barH+gap),w=((right-left)*amount)/max;ctx.fillStyle='#7d6860';ctx.font='12px Segoe UI';ctx.fillText(name,12,y+16);ctx.fillStyle='#fff1e5';roundRect(ctx,left,y,right-left,barH,11);ctx.fill();ctx.fillStyle=cat.color;roundRect(ctx,left,y,w,barH,11);ctx.fill();ctx.fillStyle='#2b2320';ctx.font='12px Segoe UI';ctx.fillText(money(amount),left+w+8,y+16)})}
+function roundRect(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
+onValue(cloudDataRef, snapshot => {
+  const cloudData = snapshot.val();
+
+  if (cloudData) {
+    data = cloudData;
+
+    syncFixedPregnancy();
+
+    localStorage.setItem(
+      DATA_KEY,
+      JSON.stringify(data)
+    );
+  } else {
+    syncFixedPregnancy();
+
+    set(cloudDataRef, data);
+  }
+
+  cloudReady = true;
+
+  render();
+});
+</script>
+</body>
+</html>
