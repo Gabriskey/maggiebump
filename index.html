@@ -466,11 +466,34 @@ function toggleCheck(type,id){const item=data.checklist[type].find(i=>i.id===id)
 function addCheck(type){const text=newCheckInput.value.trim();if(!text)return;data.checklist[type].push({id:uid('check'),text,done:false});saveData();renderChecklist()}
 function deleteCheck(type,id){data.checklist[type]=data.checklist[type].filter(i=>i.id!==id);saveData();renderChecklist()}
 function renderRecordList(id,items,type){const box=document.getElementById(id);if(!box)return;if(!items.length){box.innerHTML='<div class="empty">Nothing added yet.</div>';return}box.innerHTML=items.map(item=>{if(type==='expense'){const cat=expenseCategories.find(c=>c.name===item.category)||expenseCategories.at(-1);return `<div class="record-row"><div class="record-icon" style="background:${cat.color}">${cat.icon}</div><div><div class="record-title">${escapeHtml(item.description||item.category)}</div><div class="record-meta">${formatDate(item.date)} · ${escapeHtml(item.category)} · Paid by ${escapeHtml(item.paidBy||'—')}</div>${item.notes?`<div class="record-meta">${escapeHtml(item.notes)}</div>`:''}<div class="mini-actions"><button onclick="openExpenseModal('${item.id}')">✎</button><button class="danger" onclick="deleteExpense('${item.id}')">×</button></div></div><div class="record-amount">${money(item.amount)}</div></div>`}if(type==='appointment')return `<div class="record-row"><div class="record-icon">📅</div><div><div class="record-title">${escapeHtml(item.type)}</div><div class="record-meta">${formatDate(item.date)} ${item.time||''} · ${escapeHtml(item.doctor||'No clinic/doctor')}</div>${item.notes?`<div class="record-meta">${escapeHtml(item.notes)}</div>`:''}<div class="mini-actions"><button onclick="openAppointmentModal('${item.id}')">✎</button><button class="danger" onclick="deleteAppointment('${item.id}')">×</button></div></div><span class="pill">${item.date>=todayISO()?'Upcoming':'Done'}</span></div>`;return `<div class="record-row"><div class="record-icon">📝</div><div><div class="record-title">${escapeHtml(item.title||item.type)}</div><div class="record-meta">${formatDate(item.date)} · ${escapeHtml(item.type)}</div>${item.body?`<div class="record-meta">${escapeHtml(item.body)}</div>`:''}<div class="mini-actions"><button onclick="openNoteModal('${item.id}')">✎</button><button class="danger" onclick="deleteNote('${item.id}')">×</button></div></div><span class="pill">Note</span></div>`}).join('')}
-function renderExpenseChart(){const canvas=document.getElementById('expenseChart');if(!canvas)return;
+function renderExpenseChart(){
+const canvas=document.getElementById('expenseChart');if(!canvas)return;
 const rect=canvas.getBoundingClientRect();canvas.width=rect.width*devicePixelRatio;canvas.height=rect.height*devicePixelRatio;
 const ctx=canvas.getContext('2d');ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.clearRect(0,0,rect.width,rect.height);
-const totals=Object.entries(categoryTotals()).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);if(!totals.length){ctx.fillStyle='#7d6860';ctx.font='14px Segoe UI';ctx.fillText('No expenses yet.',20,40);return}const max=Math.max(...totals.map(x=>x[1])),left=120,right=rect.width-30,barH=22,gap=12;totals.forEach(([name,amount],i)=>{const cat=expenseCategories.find(c=>c.name===name)||expenseCategories.at(-1),y=30+i*(barH+gap),w=((right-left)*amount)/max;ctx.fillStyle='#7d6860';ctx.font='12px Segoe UI';ctx.fillText(name,12,y+16);ctx.fillStyle='#fff1e5';roundRect(ctx,left,y,right-left,barH,11);ctx.fill();ctx.fillStyle=cat.color;roundRect(ctx,left,y,w,barH,11);ctx.fill();ctx.fillStyle='#2b2320';ctx.font='12px Segoe UI';ctx.fillText(money(amount),left+w+8,y+16)})}
+const totals=Object.entries(categoryTotals()).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);if(!totals.length){ctx.fillStyle='#7d6860';ctx.font='14px Segoe UI';ctx.fillText('No expenses yet.',20,40);return}
+const max=Math.max(...totals.map(x=>x[1])),left=120,right=rect.width-30,barH=22,gap=12;totals.forEach(([name,amount],i)=>{
+const cat=expenseCategories.find(c=>c.name===name)||expenseCategories.at(-1),y=30+i*(barH+gap),w=((right-left)*amount)/max;ctx.fillStyle='#7d6860';ctx.font='12px Segoe UI';ctx.fillText(name,12,y+16);ctx.fillStyle='#fff1e5';roundRect(ctx,left,y,right-left,barH,11);ctx.fill();ctx.fillStyle=cat.color;roundRect(ctx,left,y,w,barH,11);ctx.fill();ctx.fillStyle='#2b2320';ctx.font='12px Segoe UI';ctx.fillText(money(amount),left+w+8,y+16)})}
 function roundRect(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
+
+window.setPage = setPage;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.toggleQuick = toggleQuick;
+
+window.openFundDepositModal = openFundDepositModal;
+window.openExpenseModal = openExpenseModal;
+window.openAppointmentModal = openAppointmentModal;
+window.openNoteModal = openNoteModal;
+
+window.deleteExpense = deleteExpense;
+window.deleteAppointment = deleteAppointment;
+window.deleteNote = deleteNote;
+
+window.toggleCheck = toggleCheck;
+window.addCheck = addCheck;
+window.deleteCheck = deleteCheck;
+window.render = render;
+
 onValue(cloudDataRef, snapshot => {
   const cloudData = snapshot.val();
 
