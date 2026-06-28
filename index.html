@@ -357,7 +357,6 @@ border-radius:inherit;
   line-height:1.7;
   margin-top:4px;
 }
-
 .notes-tabs{
   display:flex;
   gap:8px;
@@ -389,10 +388,31 @@ border-radius:inherit;
   display:block;
 }
 
-.calendar-controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
+.continuous-calendar{
+  max-height:72vh;
+  overflow:auto;
+  padding-right:6px;
+  display:grid;
+  gap:18px;
+}
+
+.calendar-month{
+  display:grid;
+  gap:10px;
+}
+
+.calendar-month-title{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:rgba(255,248,241,.94);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+  color:var(--accent);
+  box-shadow:var(--shadow);
 }
 
 .calendar-grid{
@@ -410,7 +430,7 @@ border-radius:inherit;
 }
 
 .calendar-cell{
-  min-height:92px;
+  min-height:96px;
   background:#fffaf7;
   border:1px solid var(--border);
   border-radius:16px;
@@ -422,6 +442,25 @@ border-radius:inherit;
 
 .calendar-cell.empty{
   opacity:.35;
+}
+
+.calendar-cell.clickable{
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.calendar-cell.clickable:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 18px rgba(83,50,34,.08);
+  border-color:rgba(222,143,110,.45);
+}
+
+.calendar-cell.today{
+  box-shadow:0 0 0 3px rgba(222,143,110,.16);
+}
+
+.calendar-cell.has-events{
+  background:#fff7ef;
 }
 
 .calendar-date{
@@ -442,25 +481,88 @@ border-radius:inherit;
   white-space:nowrap;
 }
 
-.archive-upload{
+.color-preset-grid{
   display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
   gap:8px;
 }
 
-.archive-file-actions{
+.color-preset{
   display:flex;
-  gap:6px;
-  justify-content:flex-end;
-  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  border-radius:14px;
+  padding:10px;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.color-preset.active{
+  box-shadow:0 0 0 3px rgba(222,143,110,.16);
+  border-color:rgba(222,143,110,.55);
+}
+
+.color-dot{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+.coming-soon-card{
+  min-height:320px;
+  border:1px solid var(--border);
+  border-radius:24px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at top left, rgba(222,143,110,.18), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(139,187,217,.18), transparent 35%),
+    rgba(255,255,255,.72);
+  position:relative;
+}
+
+.coming-soon-blur{
+  min-height:320px;
+  display:grid;
+  place-items:center;
+  padding:28px;
+  backdrop-filter:blur(8px);
+}
+
+.coming-soon-content{
+  max-width:520px;
+  text-align:center;
+  display:grid;
+  gap:12px;
+}
+
+.coming-soon-icon{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  margin:0 auto;
+  background:var(--accent);
+  color:white;
+  font-size:2rem;
+  box-shadow:0 18px 35px rgba(222,143,110,.25);
 }
 
 @media(max-width:900px){
+  .continuous-calendar{
+    max-height:none;
+    overflow:visible;
+  }
+
   .calendar-grid{
     gap:5px;
   }
 
   .calendar-cell{
-    min-height:76px;
+    min-height:78px;
     padding:8px;
   }
 
@@ -712,20 +814,29 @@ border-radius:inherit;
 <section id="appointmentPage" class="page">
   <section class="card"><div class="toolbar"><h2>Appointments</h2>
     <button class="btn primary" onclick="openAppointmentModal()">Add Appointment</button></div><div id="appointmentsList" class="record-list"></div></section></section>
-
-    <section id="notesPage" class="page">
+<section id="notesPage" class="page">
   <section class="card">
     <div class="toolbar">
       <h2>Notes & Preparation</h2>
     </div>
 
     <div class="notes-tabs">
-      <button class="notes-tab-btn active" type="button" data-notes-tab="checklist">Checklist</button>
-      <button class="notes-tab-btn" type="button" data-notes-tab="dates">Important Dates</button>
+      <button class="notes-tab-btn active" type="button" data-notes-tab="notes">Notes</button>
+      <button class="notes-tab-btn" type="button" data-notes-tab="checklist">Checklist</button>
+      <button class="notes-tab-btn" type="button" data-notes-tab="importantdates">Important Dates</button>
       <button class="notes-tab-btn" type="button" data-notes-tab="archive">Archive</button>
     </div>
 
-    <div id="notesChecklistPanel" class="notes-panel active">
+    <div id="notesMainPanel" class="notes-panel active">
+      <div class="toolbar">
+        <h2>Random Notes</h2>
+        <button class="btn primary" type="button" onclick="openNoteModal()">Add Note</button>
+      </div>
+
+      <div id="notesList" class="record-list"></div>
+    </div>
+
+    <div id="notesChecklistPanel" class="notes-panel">
       <div class="toolbar">
         <h2>Preparation Checklists</h2>
         <select id="checklistType" onchange="render()">
@@ -738,63 +849,59 @@ border-radius:inherit;
       <div id="checklist" class="check-list"></div>
     </div>
 
-    <div id="notesDatesPanel" class="notes-panel">
+    <div id="notesImportantDatesPanel" class="notes-panel">
       <div class="toolbar">
-        <h2>Important Dates</h2>
+       <div>
+  <h2>Important Dates</h2>
+  <p class="hint">Click any day to add a memory, milestone, or important pregnancy date.</p>
+</div>
 
-        <div class="calendar-controls">
-          <button class="btn" type="button" onclick="changeCalendarMonth(-1)">‹</button>
-          <span class="pill" id="calendarTitle">Calendar</span>
-          <button class="btn" type="button" onclick="changeCalendarMonth(1)">›</button>
-        </div>
+<button class="btn primary" type="button" 
+onclick="openImportantDateModalForDate()">Add Important Date</button>
       </div>
 
-      <div id="importantCalendar" class="calendar-grid"></div>
+      <div id="continuousCalendar" class="continuous-calendar"></div>
 
       <div style="height:14px"></div>
 
       <div class="toolbar">
-        <h2>This Month</h2>
+        <h2>Saved Important Dates</h2>
       </div>
 
       <div id="calendarLegend" class="record-list"></div>
     </div>
 
     <div id="notesArchivePanel" class="notes-panel">
-      <section class="grid-2">
-        <div class="card">
-          <div class="toolbar">
-            <h2>Random Notes</h2>
-            <button class="btn primary" type="button" onclick="openNoteModal()">Add Note</button>
+      <div class="coming-soon-card">
+        <div class="coming-soon-blur">
+          <div class="coming-soon-content">
+            <div class="coming-soon-icon">📁</div>
+            <h2>Archive coming soon</h2>
+            <p class="subtitle">
+              File uploads will be added later when cloud storage is ready. For now, keep important documents saved on your device or Google Drive.
+            </p>
           </div>
-
-          <div id="notesList" class="record-list"></div>
         </div>
-
-        <div class="card">
-          <div class="toolbar">
-            <h2>Archive Files</h2>
-          </div>
-
-          <div class="archive-upload">
-            <label>Upload documents or files</label>
-            <input id="archiveFileInput" type="file" multiple onchange="handleArchiveFiles(event)">
-            <p class="hint">Stored locally in this browser only. Best for small files under 1MB each.</p>
-          </div>
-
-          <div style="height:14px"></div>
-
-          <div id="archiveFilesList" class="record-list"></div>
-        </div>
-      </section>
+      </div>
     </div>
   </section>
 </section>
 </main>
 <div class="quick-menu" id="quickMenu">
-  <button class="quick-item" onclick="openExpenseModal()"><span class="quick-label">Add Expense</span></button><button class="quick-item" onclick="openAppointmentModal()"><span class="quick-label">Add Appointment</span></button><button class="quick-item" onclick="openNoteModal()"><span class="quick-label">Add Note</span></button></div><button class="floating-add-btn" onclick="toggleQuick()">+</button>
+  <button class="quick-item" onclick="openExpenseModal()">
+    <span class="quick-label">Add Expense</span>
+  </button>
 
+<button class="quick-item" onclick="openAppointmentModal()">
+  <span class="quick-label">Add Appointment</span>
+</button>
 
+<button class="quick-item" onclick="openNoteModal()"
+><span class="quick-label">Add Note</span>
+</button>
+</div>
+
+<button class="floating-add-btn" onclick="toggleQuick()">+</button>
   <div class="modal-backdrop" id="fundDepositModal">
   <div class="modal">
     <div class="modal-header">
@@ -940,6 +1047,53 @@ border-radius:inherit;
 </form>
 </div>
 </div>
+
+<div class="modal-backdrop" id="importantDateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="importantDateModalTitle">Add important date</h2>
+      <button onclick="closeModal('importantDateModal')">Close</button>
+    </div>
+
+    <form class="form" id="importantDateForm">
+      <input id="editingImportantDateId" type="hidden">
+      <input id="importantDateColor" type="hidden" value="#de8f6e">
+
+      <div class="row">
+        <div>
+          <label>Date</label>
+          <input id="importantDateDate" type="date" required>
+        </div>
+
+        <div>
+          <label>Time</label>
+          <input id="importantDateTime" type="time">
+        </div>
+      </div>
+
+      <div>
+        <label>Title</label>
+        <input id="importantDateTitle" placeholder="Ex. Pregnancy test, told parents, first ultrasound" required>
+      </div>
+
+      <div>
+        <label>Color</label>
+        <div id="importantDateColorOptions" class="color-preset-grid"></div>
+      </div>
+
+      <div>
+        <label>Notes</label>
+        <textarea id="importantDateNotes" rows="5" placeholder="Write anything you want to remember about this date"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" type="button" onclick="closeModal('importantDateModal')">Cancel</button>
+        <button class="btn primary" type="submit">Save important date</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="noteModal"><div class="modal"><div class="modal-header">
   <h2 id="noteModalTitle">Add note</h2>
   <button onclick="closeModal('noteModal')">Close</button>
@@ -992,7 +1146,7 @@ let cloudReady = false;
 const DATA_KEY='bumptrack-data-v1';
 const ACTIVE_PAGE_KEY='maggiebump-active-page';
 const NOTES_TAB_KEY='maggiebump-notes-tab';
-const ARCHIVE_FILES_KEY='maggiebump-archive-files-v1';
+const CALENDAR_START_DATE='2026-04-01';
 
 const PREGNANCY = {
   conceptionDate: '2026-04-22',
@@ -1017,11 +1171,20 @@ icon:'👗',color:'#d89ac8'},{name:'Baby Items',
 icon:'🍼',color:'#9bc9c2'},{name:'Hospital Bill',
 icon:'🏥',
 color:'#d96f6f'},{name:'Emergency',icon:'🚨',color:'#c95b5b'},{name:'Other',icon:'☰',color:'#a48b80'}];
+const importantDateColors = [
+  { name:'Coral', value:'#de8f6e' },
+  { name:'Peach', value:'#f3b391' },
+  { name:'Blue', value:'#8bbbd9' },
+  { name:'Green', value:'#97bd87' },
+  { name:'Yellow', value:'#e5bd67' },
+  { name:'Purple', value:'#b79bd6' },
+  { name:'Red', value:'#d96f6f' },
+  { name:'Muted', value:'#a48b80' }
+];
 const babySizes=['poppy seed','sesame seed','lentil','blueberry','raspberry','grape','kumquat','fig','lime','peach','lemon','apple','avocado','pear','mango','banana','carrot','papaya','eggplant','corn','coconut','butternut squash','cabbage','pineapple','lettuce','cauliflower','small pumpkin','watermelon'];
 const checklistTemplates={prepare:['Decide where to give birth','Estimate hospital bill and emergency buffer','Save weekly for pregnancy and hospital funds','Prepare government/insurance documents','Plan who will go with mom during delivery','List emergency contacts','Prepare transportation plan to hospital'],hospital:['Mom clothes and underwear','Baby clothes','Blanket and swaddle','Diapers and wipes','Toiletries','Phone charger','IDs and documents','Cash and cards','Snacks and water'],baby:['Newborn clothes','Diapers','Baby wipes','Blankets','Baby bottles','Baby soap/shampoo','Thermometer','Cotton balls','Changing mat','Baby towel']};
 let data=loadData();
-let archiveFiles = loadArchiveFiles();
-let calendarCursor = new Date();
+
 function defaultData(){return{settings:{dueDate:PREGNANCY.dueDate,lmp:PREGNANCY.lmpDate,momName:'Maggie',
 pregnancyGoal:30000,
 hospitalGoal:80000,
@@ -1031,19 +1194,11 @@ fundDeposits:[],
 expenses:[],
 appointments:[],
 notes:[],
-checklist:{}}}
+checklist:{},
+importantDates:[]
+}}
 function loadData(){try{return JSON.parse(localStorage.getItem(DATA_KEY))||defaultData()}catch{return defaultData()}}
-function loadArchiveFiles(){
-  try {
-    return JSON.parse(localStorage.getItem(ARCHIVE_FILES_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
 
-function saveArchiveFiles(){
-  localStorage.setItem(ARCHIVE_FILES_KEY, JSON.stringify(archiveFiles));
-}
 function syncFixedPregnancy(){
   if (!data) data = defaultData();
 
@@ -1053,6 +1208,7 @@ function syncFixedPregnancy(){
   if (!Array.isArray(data.appointments)) data.appointments = [];
   if (!Array.isArray(data.notes)) data.notes = [];
   if (!data.checklist) data.checklist = {};
+  if (!Array.isArray(data.importantDates)) data.importantDates = [];
 
   data.settings.dueDate = PREGNANCY.dueDate;
   data.settings.lmp = PREGNANCY.lmpDate;
@@ -1082,6 +1238,19 @@ function money(v){
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 function escapeHtml(v){
   return String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+function hexToRgba(hex, alpha = 0.14){
+  const clean = String(hex || '#de8f6e').replace('#','');
+
+  const r = parseInt(clean.substring(0,2), 16);
+  const g = parseInt(clean.substring(2,4), 16);
+  const b = parseInt(clean.substring(4,6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getColorName(value){
+  return importantDateColors.find(color => color.value === value)?.name || 'Custom';
+}
 function setPage(id){
   const validPages = ['homePage', 'fundPage', 'expensePage', 'appointmentPage', 'notesPage'];
 
@@ -1106,12 +1275,11 @@ function setPage(id){
 
   render();
 }
-
 function setNotesTab(tab){
-  const validTabs = ['checklist', 'dates', 'archive'];
+  const validTabs = ['notes', 'checklist', 'importantdates', 'archive'];
 
   if (!validTabs.includes(tab)) {
-    tab = 'checklist';
+    tab = 'notes';
   }
 
   document.querySelectorAll('[data-notes-tab]').forEach(button => {
@@ -1122,20 +1290,22 @@ function setNotesTab(tab){
     panel.classList.remove('active');
   });
 
-  const panel = document.getElementById(
-    tab === 'checklist'
-      ? 'notesChecklistPanel'
-      : tab === 'dates'
-        ? 'notesDatesPanel'
-        : 'notesArchivePanel'
-  );
+  const panelId =
+    tab === 'notes'
+      ? 'notesMainPanel'
+      : tab === 'checklist'
+        ? 'notesChecklistPanel'
+        : tab === 'importantdates'
+          ? 'notesImportantDatesPanel'
+          : 'notesArchivePanel';
+
+  const panel = document.getElementById(panelId);
 
   if (panel) panel.classList.add('active');
 
   localStorage.setItem(NOTES_TAB_KEY, tab);
 
   renderImportantCalendar();
-  renderArchiveFiles();
 }
 
 function openModal(id){
@@ -1170,10 +1340,64 @@ function openExpenseModal(
   id=''){const item=data.expenses.find(e=>e.id===id);expenseModalTitle.textContent=item?'Edit expense':'Add expense';
   editingExpenseId.value=item?.id||'';expenseDate.value=item?.date||todayISO();expenseAmount.value=item?.amount||'';expenseCategory.value=item?.category||expenseCategories[0].name;expensePaidBy.value=item?.paidBy||'Me';expenseDescription.value=item?.description||'';expenseNotes.value=item?.notes||'';openModal('expenseModal');quickMenu.classList.remove('open')}
 function openAppointmentModal(id=''){const item=data.appointments.find(a=>a.id===id);appointmentModalTitle.textContent=item?'Edit appointment':'Add appointment';editingAppointmentId.value=item?.id||'';appointmentDate.value=item?.date||todayISO();appointmentTime.value=item?.time||'';appointmentType.value=item?.type||'OB Checkup';appointmentDoctor.value=item?.doctor||'';appointmentNotes.value=item?.notes||'';openModal('appointmentModal');quickMenu.classList.remove('open')}
+function renderImportantDateColorOptions(selected = '#de8f6e'){
+  const box = document.getElementById('importantDateColorOptions');
+  if (!box) return;
+
+  box.innerHTML = importantDateColors.map(color => `
+    <button
+      class="color-preset ${color.value === selected ? 'active' : ''}"
+      type="button"
+      onclick="setImportantDateColor('${color.value}')"
+    >
+      <span class="color-dot" style="background:${color.value}"></span>
+      ${color.name}
+    </button>
+  `).join('');
+}
+
+function setImportantDateColor(color){
+  importantDateColor.value = color;
+  renderImportantDateColorOptions(color);
+}
+function openImportantDateModal(id = ''){
+  syncFixedPregnancy();
+
+  const item = (data.importantDates || []).find(date => date.id === id);
+
+  editingImportantDateId.value = item?.id || '';
+  importantDateDate.value = item?.date || todayISO();
+  importantDateTime.value = item?.time || '';
+  importantDateTitle.value = item?.title || '';
+  importantDateNotes.value = item?.notes || '';
+  importantDateColor.value = item?.color || '#de8f6e';
+
+  importantDateModalTitle.textContent = item ? 'Edit important date' : 'Add important date';
+
+  renderImportantDateColorOptions(importantDateColor.value);
+  openModal('importantDateModal');
+}
+function openImportantDateModalForDate(date = todayISO()){
+  openImportantDateModal();
+
+  importantDateDate.value = date;
+  importantDateModalTitle.textContent = `Add important date for ${formatDate(date)}`;
+}
+
 function openNoteModal(
   id=''){const item=data.notes.find(n=>n.id===id);noteModalTitle.textContent=item?'Edit note':'Add note';editingNoteId.value=item?.id||'';noteDate.value=item?.date||todayISO();noteType.value=item?.type||'Symptom';noteTitle.value=item?.title||'';noteBody.value=item?.body||'';openModal('noteModal');quickMenu.classList.remove('open')}
 function deleteExpense(id){if(!confirm('Delete this expense?'))return;data.expenses=data.expenses.filter(e=>e.id!==id);saveData();render()}
 function deleteAppointment(id){if(!confirm('Delete this appointment?'))return;data.appointments=data.appointments.filter(a=>a.id!==id);saveData();render()}
+function deleteImportantDate(id){
+  if (!confirm('Delete this important date?')) return;
+
+  syncFixedPregnancy();
+
+  data.importantDates = (data.importantDates || []).filter(item => item.id !== id);
+
+  saveData();
+  render();
+}
 function deleteNote(id){if(!confirm('Delete this note?'))return;data.notes=data.notes.filter(n=>n.id!==id);saveData();render()}
 fundDepositForm.addEventListener('submit',e=>{
   e.preventDefault();
@@ -1217,7 +1441,46 @@ fundForm.addEventListener('submit',e=>{
 });
 ;expenseForm.addEventListener('submit',e=>{e.preventDefault()
   ;const id=editingExpenseId.value||uid('expense')
-  ;const item={id,date:expenseDate.value,amount:Number(expenseAmount.value)||0,category:expenseCategory.value,paidBy:expensePaidBy.value,description:expenseDescription.value.trim(),notes:expenseNotes.value.trim(),createdAt:Date.now()};const i=data.expenses.findIndex(e=>e.id===id);if(i>=0)data.expenses[i]=item;else data.expenses.push(item);saveData();closeModal('expenseModal');render()});appointmentForm.addEventListener('submit',e=>{e.preventDefault();const id=editingAppointmentId.value||uid('appt');const item={id,date:appointmentDate.value,time:appointmentTime.value,type:appointmentType.value,doctor:appointmentDoctor.value.trim(),notes:appointmentNotes.value.trim(),createdAt:Date.now()};const i=data.appointments.findIndex(a=>a.id===id);if(i>=0)data.appointments[i]=item;else data.appointments.push(item);saveData();closeModal('appointmentModal');render()});noteForm.addEventListener('submit',e=>{e.preventDefault();const id=editingNoteId.value||uid('note');const item={id,date:noteDate.value,type:noteType.value,title:noteTitle.value.trim(),body:noteBody.value.trim(),createdAt:Date.now()};const i=data.notes.findIndex(n=>n.id===id);if(i>=0)data.notes[i]=item;else data.notes.push(item);saveData();closeModal('noteModal');render()});
+  ;const item={id,date:expenseDate.value,amount:Number(expenseAmount.value)||0,category:expenseCategory.value,paidBy:expensePaidBy.value,description:expenseDescription.value
+    .trim(),notes:expenseNotes.value.trim(),createdAt:Date.now()};
+  const i=data.expenses.findIndex(e=>e.id===id);if(i>=0)data.expenses[i]=item;else data.expenses.push(item);saveData();closeModal('expenseModal');render()});
+  appointmentForm.addEventListener('submit',e=>{e.preventDefault();
+    const id=editingAppointmentId.value||uid('appt');
+  const item={id,date:appointmentDate.value,time:appointmentTime.value,type:appointmentType.value,doctor:appointmentDoctor.value.trim(),notes:appointmentNotes.value.trim(),createdAt:Date.now()};
+  const i=data.appointments.findIndex(a=>a.id===id);if(i>=0)data.appointments[i]=item;
+  else data.appointments.push(item);saveData();closeModal('appointmentModal');render()});
+ 
+importantDateForm.addEventListener('submit', e => {
+  e.preventDefault();
+
+  syncFixedPregnancy();
+
+  const id = editingImportantDateId.value || uid('date');
+
+  const item = {
+    id,
+    date: importantDateDate.value,
+    time: importantDateTime.value,
+    title: importantDateTitle.value.trim(),
+    notes: importantDateNotes.value.trim(),
+    color: importantDateColor.value || '#de8f6e',
+    createdAt: (data.importantDates || []).find(date => date.id === id)?.createdAt || Date.now()
+  };
+
+  const index = (data.importantDates || []).findIndex(date => date.id === id);
+
+  if (index >= 0) {
+    data.importantDates[index] = item;
+  } else {
+    data.importantDates.push(item);
+  }
+
+  saveData();
+  closeModal('importantDateModal');
+  render();
+});
+
+  noteForm.addEventListener('submit',e=>{e.preventDefault();const id=editingNoteId.value||uid('note');const item={id,date:noteDate.value,type:noteType.value,title:noteTitle.value.trim(),body:noteBody.value.trim(),createdAt:Date.now()};const i=data.notes.findIndex(n=>n.id===id);if(i>=0)data.notes[i]=item;else data.notes.push(item);saveData();closeModal('noteModal');render()});
 function getPregnancyInfo(){const due=parseLocalDate(PREGNANCY.dueDate);
   const today=new Date();today.setHours(0,0,0,0);due.setHours(0,0,0,0);
   const daysLeft=Math.ceil((due-today)/86400000);
@@ -1260,7 +1523,6 @@ function render(){
   renderChecklist();
   renderExpenseChart();
   renderImportantCalendar();
-  renderArchiveFiles();
 }
 function renderSelects(){if(expenseCategory&&!expenseCategory.children.length)expenseCategory.innerHTML=expenseCategories.map(c=>`<option>${c.name}</option>`).join('')}
 function renderHome(){
@@ -1352,50 +1614,43 @@ setText(
     const total=data.expenses.reduce((s,e)=>s+Number(e.amount||0),0),month=todayISO().slice(0,7),monthTotal=data.expenses.filter(e=>(e.date||'').startsWith(month)).reduce((s,e)=>s+Number(e.amount||0),0),by=categoryTotals(),big=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];setText('expenseTotal',money(total));setText('thisMonthExpense',money(monthTotal));setText('expenseCount',data.expenses.length);setText('biggestCategory',big?big[0]:'—');categorySummary.innerHTML=expenseCategories.map(c=>`<div class="category-card"><div class="category-emoji">${c.icon}</div><div class="category-name">${c.name}</div><div class="category-total">${money(by[c.name]||0)}</div></div>`).join('');renderRecordList('expensesList',data.expenses.slice().sort(sortNewest),'expense')}
 function renderAppointments(){renderRecordList('appointmentsList',data.appointments.slice().sort((a,b)=>`${a.date}T${a.time||''}`.localeCompare(`${b.date}T${b.time||''}`)),'appointment')}
 function getImportantDates(){
-  const items = [
+  const fixedDates = [
     {
-      date: PREGNANCY.ultrasoundDate,
-      title: 'Ultrasound record',
-      type: 'Pregnancy Record',
-      icon: '🖥️'
+      id:'fixed_conception',
+      date:PREGNANCY.conceptionDate,
+      title:'Possible conception date',
+      notes:'Based on the date recorded in the app.',
+      color:'#de8f6e',
+      fixed:true
     },
     {
-      date: PREGNANCY.dueDate,
-      title: 'Estimated due date',
-      type: 'Due Date',
-      icon: '👶'
+      id:'fixed_ultrasound',
+      date:PREGNANCY.ultrasoundDate,
+      title:'First ultrasound record',
+      notes:`CRL ${PREGNANCY.crlCm} cm · FHR ${PREGNANCY.fetalHeartRate} bpm · 7w0d by CRL`,
+      color:'#8bbbd9',
+      fixed:true
+    },
+    {
+      id:'fixed_due_date',
+      date:PREGNANCY.dueDate,
+      title:'Estimated due date',
+      notes:'Calculated from ultrasound CRL.',
+      color:'#97bd87',
+      fixed:true
     }
   ];
 
-  data.appointments.forEach(appt => {
-    items.push({
-      date: appt.date,
-      title: appt.type || 'Appointment',
-      type: appt.doctor || 'Appointment',
-      icon: '📅',
-      time: appt.time || ''
-    });
-  });
-
-  return items.filter(item => item.date);
+  return [
+    ...fixedDates,
+    ...(data.importantDates || [])
+  ].filter(item => item.date);
 }
+function renderCalendarMonth(monthDate, importantDates){
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
 
-function changeCalendarMonth(offset){
-  calendarCursor.setMonth(calendarCursor.getMonth() + offset);
-  renderImportantCalendar();
-}
-
-function renderImportantCalendar(){
-  const calendar = document.getElementById('importantCalendar');
-  const title = document.getElementById('calendarTitle');
-  const legend = document.getElementById('calendarLegend');
-
-  if (!calendar || !title || !legend) return;
-
-  const year = calendarCursor.getFullYear();
-  const month = calendarCursor.getMonth();
-
-  title.textContent = new Date(year, month, 1).toLocaleDateString('en-US', {
+  const monthTitle = monthDate.toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric'
   });
@@ -1403,12 +1658,14 @@ function renderImportantCalendar(){
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = todayISO();
 
-  const importantDates = getImportantDates();
-
-  let html = dayNames.map(day => `
-    <div class="calendar-day-name">${day}</div>
-  `).join('');
+  let html = `
+    <section class="calendar-month">
+      <div class="calendar-month-title">${monthTitle}</div>
+      <div class="calendar-grid">
+        ${dayNames.map(day => `<div class="calendar-day-name">${day}</div>`).join('')}
+  `;
 
   for (let i = 0; i < firstDay; i++) {
     html += `<div class="calendar-cell empty"></div>`;
@@ -1418,117 +1675,99 @@ function renderImportantCalendar(){
     const date = new Date(year, month, day);
     const iso = dateToISO(date);
     const events = importantDates.filter(item => item.date === iso);
+    const firstColor = events[0]?.color || '';
+    const cellStyle = firstColor
+      ? `style="background:${hexToRgba(firstColor, .13)}; border-color:${firstColor}"`
+      : '';
 
     html += `
-      <div class="calendar-cell">
+      <div
+        class="calendar-cell clickable ${iso === today ? 'today' : ''} ${events.length ? 'has-events' : ''}"
+        ${cellStyle}
+        onclick="openImportantDateModalForDate('${iso}')"
+      >
         <div class="calendar-date">${day}</div>
-        ${events.map(event => `
-          <span class="calendar-event">${event.icon} ${escapeHtml(event.title)}</span>
+
+        ${events.slice(0, 3).map(event => `
+          <span
+            class="calendar-event"
+            style="background:${event.color || '#de8f6e'}; color:white;"
+            title="${escapeHtml(event.notes || '')}"
+          >
+            ${escapeHtml(event.title)}
+          </span>
         `).join('')}
+
+        ${events.length > 3 ? `<span class="calendar-event">+${events.length - 3} more</span>` : ''}
       </div>
     `;
   }
 
-  calendar.innerHTML = html;
+  html += `
+      </div>
+    </section>
+  `;
 
-  const monthEvents = importantDates
-    .filter(item => {
-      const d = parseLocalDate(item.date);
-      return d && d.getFullYear() === year && d.getMonth() === month;
-    })
-    .sort((a,b) => a.date.localeCompare(b.date));
+  return html;
+}
 
-  if (!monthEvents.length) {
-    legend.innerHTML = '<div class="empty">No important dates this month.</div>';
+function renderImportantCalendar(){
+  const calendar = document.getElementById('continuousCalendar');
+  const legend = document.getElementById('calendarLegend');
+
+  if (!calendar || !legend) return;
+
+  const importantDates = getImportantDates();
+
+const start = parseLocalDate(CALENDAR_START_DATE);
+start.setHours(0,0,0,0);
+
+  const due = parseLocalDate(PREGNANCY.dueDate);
+  const monthsUntilDue = due
+    ? ((due.getFullYear() - start.getFullYear()) * 12) + (due.getMonth() - start.getMonth()) + 1
+    : 10;
+
+  const monthsToShow = Math.max(10, monthsUntilDue + 1);
+
+  let calendarHtml = '';
+
+  for (let i = 0; i < monthsToShow; i++) {
+    const monthDate = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    calendarHtml += renderCalendarMonth(monthDate, importantDates);
+  }
+
+  calendar.innerHTML = calendarHtml;
+
+    const timelineDates = importantDates
+    .slice()
+    .sort((a,b) => `${a.date}${a.time || ''}`.localeCompare(`${b.date}${b.time || ''}`));
+
+  if (!timelineDates.length) {
+    legend.innerHTML = '<div class="empty">No important dates yet.</div>';
     return;
   }
 
-  legend.innerHTML = monthEvents.map(item => `
+  legend.innerHTML = timelineDates.map(item => `
     <div class="record-row">
-      <div class="record-icon">${item.icon}</div>
+      <div class="record-icon" style="background:${item.color || '#de8f6e'}">★</div>
       <div>
         <div class="record-title">${escapeHtml(item.title)}</div>
-        <div class="record-meta">${formatDate(item.date)} ${item.time || ''} · ${escapeHtml(item.type)}</div>
+        <div class="record-meta">
+          ${formatDate(item.date)} ${item.time || ''} · ${item.fixed ? 'Fixed record' : getColorName(item.color)}
+        </div>
+        ${item.notes ? `<div class="record-meta">${escapeHtml(item.notes)}</div>` : ''}
+        ${!item.fixed ? `
+          <div class="mini-actions">
+            <button onclick="openImportantDateModal('${item.id}')">✎</button>
+            <button class="danger" onclick="deleteImportantDate('${item.id}')">×</button>
+          </div>
+        ` : ''}
       </div>
-      <span class="pill">Date</span>
+      <span class="pill">${item.fixed ? 'Fixed' : 'Saved'}</span>
     </div>
   `).join('');
 }
 
-function formatBytes(bytes){
-  const size = Number(bytes) || 0;
-
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function handleArchiveFiles(event){
-  const files = Array.from(event.target.files || []);
-  const maxSize = 1024 * 1024;
-
-  if (!files.length) return;
-
-  files.forEach(file => {
-    if (file.size > maxSize) {
-      alert(`${file.name} is too large. Please use files under 1MB for localStorage.`);
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      archiveFiles.unshift({
-        id: uid('archive'),
-        name: file.name,
-        type: file.type || 'Unknown file',
-        size: file.size,
-        dataUrl: reader.result,
-        createdAt: Date.now()
-      });
-
-      saveArchiveFiles();
-      renderArchiveFiles();
-    };
-
-    reader.readAsDataURL(file);
-  });
-
-  event.target.value = '';
-}
-
-function renderArchiveFiles(){
-  const box = document.getElementById('archiveFilesList');
-  if (!box) return;
-
-  if (!archiveFiles.length) {
-    box.innerHTML = '<div class="empty">No archived files yet.</div>';
-    return;
-  }
-
-  box.innerHTML = archiveFiles.map(file => `
-    <div class="record-row">
-      <div class="record-icon">📎</div>
-      <div>
-        <div class="record-title">${escapeHtml(file.name)}</div>
-        <div class="record-meta">${escapeHtml(file.type)} · ${formatBytes(file.size)}</div>
-      </div>
-      <div class="archive-file-actions">
-        <a class="btn" href="${file.dataUrl}" download="${escapeHtml(file.name)}">Open</a>
-        <button class="danger" type="button" onclick="deleteArchiveFile('${file.id}')">×</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function deleteArchiveFile(id){
-  if (!confirm('Delete this archived file?')) return;
-
-  archiveFiles = archiveFiles.filter(file => file.id !== id);
-  saveArchiveFiles();
-  renderArchiveFiles();
-}
 
 function renderNotes(){renderRecordList('notesList',data.notes.slice().sort(sortNewest),'note')}
 function renderChecklist(){
@@ -1548,7 +1787,8 @@ function renderExpenseChart(){
 const canvas=document.getElementById('expenseChart');if(!canvas)return;
 const rect=canvas.getBoundingClientRect();canvas.width=rect.width*devicePixelRatio;canvas.height=rect.height*devicePixelRatio;
 const ctx=canvas.getContext('2d');ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.clearRect(0,0,rect.width,rect.height);
-const totals=Object.entries(categoryTotals()).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);if(!totals.length){ctx.fillStyle='#7d6860';ctx.font='14px Segoe UI';ctx.fillText('No expenses yet.',20,40);return}
+const totals=Object.entries(categoryTotals()).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8);
+if(!totals.length){ctx.fillStyle='#7d6860';ctx.font='14px Segoe UI';ctx.fillText('No expenses yet.',20,40);return}
 const max=Math.max(...totals.map(x=>x[1])),left=120,right=rect.width-30,barH=22,gap=12;totals.forEach(([name,amount],i)=>{
 const cat=expenseCategories.find(c=>c.name===name)||expenseCategories.at(-1),y=30+i*(barH+gap),w=((right-left)*amount)/max;ctx.fillStyle='#7d6860';ctx.font='12px Segoe UI';ctx.fillText(name,12,y+16);ctx.fillStyle='#fff1e5';roundRect(ctx,left,y,right-left,barH,11);ctx.fill();ctx.fillStyle=cat.color;roundRect(ctx,left,y,w,barH,11);ctx.fill();ctx.fillStyle='#2b2320';ctx.font='12px Segoe UI';ctx.fillText(money(amount),left+w+8,y+16)})}
 function roundRect(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
@@ -1563,9 +1803,13 @@ window.openFundGoalModal = openFundGoalModal;
 window.openExpenseModal = openExpenseModal;
 window.openAppointmentModal = openAppointmentModal;
 window.openNoteModal = openNoteModal;
+window.openImportantDateModal = openImportantDateModal;
+window.openImportantDateModalForDate = openImportantDateModalForDate;
+window.setImportantDateColor = setImportantDateColor;
 
 window.deleteExpense = deleteExpense;
 window.deleteAppointment = deleteAppointment;
+window.deleteImportantDate = deleteImportantDate;
 window.deleteNote = deleteNote;
 
 window.toggleCheck = toggleCheck;
@@ -1573,9 +1817,6 @@ window.addCheck = addCheck;
 window.deleteCheck = deleteCheck;
 window.render = render;
 window.setNotesTab = setNotesTab;
-window.changeCalendarMonth = changeCalendarMonth;
-window.handleArchiveFiles = handleArchiveFiles;
-window.deleteArchiveFile = deleteArchiveFile;
 
 document.querySelectorAll('[data-page]').forEach(button => {
   button.addEventListener('click', () => {
@@ -1595,9 +1836,9 @@ const validPages = ['homePage', 'fundPage', 'expensePage', 'appointmentPage', 'n
 setPage(validPages.includes(savedPage) ? savedPage : 'homePage');
 
 const savedNotesTab = localStorage.getItem(NOTES_TAB_KEY);
-const validNotesTabs = ['checklist', 'dates', 'archive'];
+const validNotesTabs = ['notes', 'checklist', 'importantdates', 'archive'];
 
-setNotesTab(validNotesTabs.includes(savedNotesTab) ? savedNotesTab : 'checklist');
+setNotesTab(validNotesTabs.includes(savedNotesTab) ? savedNotesTab : 'notes');
 
 onValue(cloudDataRef, snapshot => {
   const cloudData = snapshot.val();
