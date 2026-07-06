@@ -106,6 +106,40 @@ const importantDateColors = [
   { name:'Red', value:'#d96f6f' },
   { name:'Muted', value:'#a48b80' }
 ];
+const fundStorageColors = [
+  {
+    name: 'Sage',
+    value: '#65716B'
+  },
+  {
+    name: 'Clay',
+    value: '#CB9E71'
+  },
+  {
+    name: 'Caramel',
+    value: '#A77B52'
+  },
+  {
+    name: 'Blue',
+    value: '#6F8FA7'
+  },
+  {
+    name: 'Olive',
+    value: '#8A926B'
+  },
+  {
+    name: 'Plum',
+    value: '#8B6F8E'
+  },
+  {
+    name: 'Rose',
+    value: '#B47A7A'
+  },
+  {
+    name: 'Gold',
+    value: '#B9944C'
+  }
+];
 const babySizes=['poppy seed','sesame seed','lentil','blueberry','raspberry','grape','kumquat','fig','lime','peach','lemon','apple','avocado','pear','mango','banana','carrot','papaya','eggplant','corn','coconut','butternut squash','cabbage','pineapple','lettuce','cauliflower','small pumpkin','watermelon'];
 const checklistTemplates={prepare:['Decide where to give birth','Estimate hospital bill and emergency buffer','Save weekly for pregnancy and hospital funds','Prepare government/insurance documents','Plan who will go with mom during delivery','List emergency contacts','Prepare transportation plan to hospital'],hospital:['Mom clothes and underwear','Baby clothes','Blanket and swaddle','Diapers and wipes','Toiletries','Phone charger','IDs and documents','Cash and cards','Snacks and water'],baby:['Newborn clothes','Diapers','Baby wipes','Blankets','Baby bottles','Baby soap/shampoo','Thermometer','Cotton balls','Changing mat','Baby towel']};
 let data=loadData();
@@ -737,9 +771,468 @@ function dateToISO(date){
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }function parseLocalDate(v){if(!v)
   return null;const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)}
-function formatDate(v){const d=parseLocalDate(v);if(!d)
-  return 'No date';
-  return d.toLocaleDateString('en-US',{month:'long',day:'2-digit',year:'numeric'})}
+function formatDate(
+  value
+) {
+  const date =
+    parseLocalDate(value);
+
+  if (!date) {
+    return 'No date';
+  }
+
+  return date.toLocaleDateString(
+    'en-US',
+    {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }
+  );
+}
+
+let activeDateInputId = '';
+
+let datePickerSelectedISO = '';
+
+let datePickerViewMonth =
+  new Date();
+
+function updateDateDisplay(
+  inputId
+) {
+  const input =
+    document.getElementById(
+      inputId
+    );
+
+  document
+    .querySelectorAll(
+      '[data-date-display-for]'
+    )
+    .forEach(display => {
+      if (
+        display.dataset
+          .dateDisplayFor !==
+        inputId
+      ) {
+        return;
+      }
+
+      display.textContent =
+        input?.value
+          ? formatDate(input.value)
+          : 'Select date';
+    });
+}
+
+function refreshAllDateDisplays() {
+  document
+    .querySelectorAll(
+      '[data-date-display-for]'
+    )
+    .forEach(display => {
+      const inputId =
+        display.dataset
+          .dateDisplayFor;
+
+      updateDateDisplay(
+        inputId
+      );
+    });
+}
+
+function openDatePickerForInput(
+  inputId
+) {
+  const input =
+    document.getElementById(
+      inputId
+    );
+
+  if (!input) return;
+
+  const initialValue =
+    input.value ||
+    todayISO();
+
+  const initialDate =
+    parseLocalDate(
+      initialValue
+    ) ||
+    new Date();
+
+  activeDateInputId =
+    inputId;
+
+  datePickerSelectedISO =
+    initialValue;
+
+  datePickerViewMonth =
+    new Date(
+      initialDate.getFullYear(),
+      initialDate.getMonth(),
+      1
+    );
+
+  renderDatePicker();
+
+  openModal(
+    'datePickerModal'
+  );
+}
+
+function closeDatePicker() {
+  closeModal(
+    'datePickerModal'
+  );
+
+  activeDateInputId = '';
+}
+
+function renderDatePicker() {
+  const title =
+    document.getElementById(
+      'datePickerTitle'
+    );
+
+  const grid =
+    document.getElementById(
+      'datePickerGrid'
+    );
+
+  const selectedText =
+    document.getElementById(
+      'datePickerSelectedText'
+    );
+
+  if (
+    !title ||
+    !grid ||
+    !selectedText
+  ) {
+    return;
+  }
+
+  const year =
+    datePickerViewMonth
+      .getFullYear();
+
+  const month =
+    datePickerViewMonth
+      .getMonth();
+
+  title.textContent =
+    datePickerViewMonth
+      .toLocaleDateString(
+        'en-US',
+        {
+          month: 'long',
+          year: 'numeric'
+        }
+      );
+
+  const firstVisibleDate =
+    new Date(
+      year,
+      month,
+      1
+    );
+
+  firstVisibleDate.setDate(
+    1 -
+    firstVisibleDate.getDay()
+  );
+
+  const today =
+    todayISO();
+
+  grid.innerHTML =
+    Array.from(
+      { length: 42 },
+      (_, index) => {
+        const date =
+          new Date(
+            firstVisibleDate
+          );
+
+        date.setDate(
+          firstVisibleDate
+            .getDate() +
+          index
+        );
+
+        const iso =
+          dateToISO(date);
+
+        const isOutsideMonth =
+          date.getMonth() !==
+          month;
+
+        const isToday =
+          iso === today;
+
+        const isSelected =
+          iso ===
+          datePickerSelectedISO;
+
+        return `
+          <button
+            class="
+              date-picker-day
+              ${
+                isOutsideMonth
+                  ? 'outside-month'
+                  : ''
+              }
+              ${
+                isToday
+                  ? 'today'
+                  : ''
+              }
+              ${
+                isSelected
+                  ? 'selected'
+                  : ''
+              }
+            "
+            type="button"
+            data-date-picker-value="${iso}"
+            aria-label="${formatDate(iso)}"
+          >
+            ${date.getDate()}
+          </button>
+        `;
+      }
+    ).join('');
+
+  selectedText.textContent =
+    datePickerSelectedISO
+      ? `Selected: ${
+          formatDate(
+            datePickerSelectedISO
+          )
+        }`
+      : 'No date selected';
+}
+
+document.addEventListener(
+  'click',
+  event => {
+    const button =
+      event.target.closest(
+        '[data-date-input]'
+      );
+
+    if (!button) return;
+
+    openDatePickerForInput(
+      button.dataset.dateInput
+    );
+  }
+);
+
+document
+  .getElementById(
+    'datePickerGrid'
+  )
+  ?.addEventListener(
+    'click',
+    event => {
+      const button =
+        event.target.closest(
+          '[data-date-picker-value]'
+        );
+
+      if (!button) return;
+
+      datePickerSelectedISO =
+        button.dataset
+          .datePickerValue;
+
+      const selectedDate =
+        parseLocalDate(
+          datePickerSelectedISO
+        );
+
+      if (selectedDate) {
+        datePickerViewMonth =
+          new Date(
+            selectedDate
+              .getFullYear(),
+
+            selectedDate
+              .getMonth(),
+
+            1
+          );
+      }
+
+      renderDatePicker();
+    }
+  );
+
+document
+  .getElementById(
+    'datePickerPrevBtn'
+  )
+  ?.addEventListener(
+    'click',
+    () => {
+      datePickerViewMonth =
+        new Date(
+          datePickerViewMonth
+            .getFullYear(),
+
+          datePickerViewMonth
+            .getMonth() - 1,
+
+          1
+        );
+
+      renderDatePicker();
+    }
+  );
+
+document
+  .getElementById(
+    'datePickerNextBtn'
+  )
+  ?.addEventListener(
+    'click',
+    () => {
+      datePickerViewMonth =
+        new Date(
+          datePickerViewMonth
+            .getFullYear(),
+
+          datePickerViewMonth
+            .getMonth() + 1,
+
+          1
+        );
+
+      renderDatePicker();
+    }
+  );
+
+document
+  .getElementById(
+    'datePickerTodayBtn'
+  )
+  ?.addEventListener(
+    'click',
+    () => {
+      const today =
+        parseLocalDate(
+          todayISO()
+        );
+
+      datePickerSelectedISO =
+        todayISO();
+
+      datePickerViewMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+
+      renderDatePicker();
+    }
+  );
+
+document
+  .getElementById(
+    'datePickerUseBtn'
+  )
+  ?.addEventListener(
+    'click',
+    () => {
+      const input =
+        document.getElementById(
+          activeDateInputId
+        );
+
+      if (
+        !input ||
+        !datePickerSelectedISO
+      ) {
+        return;
+      }
+
+      input.value =
+        datePickerSelectedISO;
+
+      input.dispatchEvent(
+        new Event(
+          'change',
+          {
+            bubbles: true
+          }
+        )
+      );
+
+      updateDateDisplay(
+        activeDateInputId
+      );
+
+      closeDatePicker();
+    }
+  );
+
+document
+  .getElementById(
+    'datePickerCancelBtn'
+  )
+  ?.addEventListener(
+    'click',
+    closeDatePicker
+  );
+
+document
+  .getElementById(
+    'datePickerCloseBtn'
+  )
+  ?.addEventListener(
+    'click',
+    closeDatePicker
+  );
+
+document
+  .getElementById(
+    'datePickerModal'
+  )
+  ?.addEventListener(
+    'click',
+    event => {
+      if (
+        event.target.id ===
+        'datePickerModal'
+      ) {
+        closeDatePicker();
+      }
+    }
+  );
+
+window.addEventListener(
+  'keydown',
+  event => {
+    if (
+      event.key ===
+        'Escape' &&
+      document
+        .getElementById(
+          'datePickerModal'
+        )
+        ?.classList
+        .contains('open')
+    ) {
+      closeDatePicker();
+    }
+  }
+);
+
 function money(v){
   return new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(v)||0)}
 function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
@@ -758,6 +1251,818 @@ function hexToRgba(hex, alpha = 0.14){
 function getColorName(value){
   return importantDateColors.find(color => color.value === value)?.name || 'Custom';
 }
+function normalizeFundStorageName(
+  value
+) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function getExistingFundStorageColor(
+  storage,
+  ignoredDepositId = ''
+) {
+  const normalizedStorage =
+    normalizeFundStorageName(
+      storage
+    );
+
+  if (!normalizedStorage) {
+    return '';
+  }
+
+  const matchingDeposit =
+    (data.fundDeposits || []).find(
+      item =>
+        item.id !== ignoredDepositId &&
+        normalizeFundStorageName(
+          item.storage ||
+          'Unassigned'
+        ) === normalizedStorage &&
+        item.storageColor
+    );
+
+  return matchingDeposit?.storageColor || '';
+}
+
+function getNextFundStorageColor(
+  ignoredDepositId = ''
+) {
+  const usedColors =
+    new Set(
+      (data.fundDeposits || [])
+        .filter(
+          item =>
+            item.id !==
+            ignoredDepositId
+        )
+        .map(
+          item =>
+            item.storageColor
+        )
+        .filter(Boolean)
+    );
+
+  const availableColor =
+    fundStorageColors.find(
+      color =>
+        !usedColors.has(
+          color.value
+        )
+    );
+
+  return (
+    availableColor?.value ||
+    fundStorageColors[
+      usedColors.size %
+      fundStorageColors.length
+    ].value
+  );
+}
+function getFundDepositStorageColor(
+  item
+) {
+  const storage =
+    String(
+      item?.storage ||
+      'Unassigned'
+    ).trim() ||
+    'Unassigned';
+
+  if (
+    normalizeFundStorageName(
+      storage
+    ) === 'unassigned'
+  ) {
+    return '#7B8A83';
+  }
+
+  return (
+    item?.storageColor ||
+    getExistingFundStorageColor(
+      storage,
+      item?.id
+    ) ||
+    fundStorageColors[0].value
+  );
+}
+function getFundStorageOptions() {
+  const storageMap =
+    new Map();
+
+  storageMap.set(
+    'unassigned',
+    {
+      name: 'Unassigned',
+      color: '#7B8A83'
+    }
+  );
+
+  (data.fundDeposits || [])
+    .forEach(item => {
+      const name =
+        String(
+          item.storage ||
+          'Unassigned'
+        ).trim();
+
+      const key =
+        normalizeFundStorageName(
+          name
+        );
+
+      if (!key) return;
+
+      if (!storageMap.has(key)) {
+        storageMap.set(
+          key,
+          {
+            name,
+            color:
+              getFundDepositStorageColor(
+                item
+              )
+          }
+        );
+      }
+    });
+
+  return [
+    ...storageMap.values()
+  ].sort(
+    (a, b) =>
+      a.name.localeCompare(
+        b.name
+      )
+  );
+}
+
+function renderFundStorageSuggestions(
+  filter = ''
+) {
+  const box =
+    document.getElementById(
+      'fundStorageOptions'
+    );
+
+  if (!box) return;
+
+  const normalizedFilter =
+    normalizeFundStorageName(
+      filter
+    );
+
+  const options =
+    getFundStorageOptions()
+      .filter(option =>
+        !normalizedFilter ||
+        normalizeFundStorageName(
+          option.name
+        ).includes(
+          normalizedFilter
+        )
+      );
+
+  if (!options.length) {
+    box.innerHTML = `
+      <div class="storage-dropdown-empty">
+        Type a new storage name
+      </div>
+    `;
+
+    return;
+  }
+
+  box.innerHTML =
+    options
+      .map(option => {
+        const encodedName =
+          encodeURIComponent(
+            option.name
+          );
+
+        const isUnassigned =
+          normalizeFundStorageName(
+            option.name
+          ) === 'unassigned';
+
+        return `
+          <div class="storage-dropdown-row">
+            <button
+              class="storage-dropdown-option"
+              type="button"
+              data-storage="${encodedName}"
+              role="option"
+            >
+              <span
+                class="storage-dot"
+                style="background:${option.color}">
+              </span>
+
+              <span>
+                ${escapeHtml(option.name)}
+              </span>
+            </button>
+
+            ${
+              isUnassigned
+                ? ''
+                : `
+                  <div class="storage-dropdown-actions">
+                    <button
+                      type="button"
+                      data-storage-action="edit"
+                      data-storage-name="${encodedName}"
+                      aria-label="Edit ${escapeHtml(option.name)}"
+                      title="Edit storage">
+                      ✎
+                    </button>
+
+                    <button
+                      class="danger"
+                      type="button"
+                      data-storage-action="delete"
+                      data-storage-name="${encodedName}"
+                      aria-label="Delete ${escapeHtml(option.name)}"
+                      title="Delete storage">
+                      ×
+                    </button>
+                  </div>
+                `
+            }
+          </div>
+        `;
+      })
+      .join('');
+}
+
+function renderFundStorageColorOptions(
+  selectedColor = '#65716B'
+) {
+  const box =
+    document.getElementById(
+      'fundDepositStorageColorOptions'
+    );
+
+  if (!box) return;
+
+  box.innerHTML =
+    fundStorageColors
+      .map(
+        color => `
+          <button
+            class="color-preset ${
+              color.value === selectedColor
+                ? 'active'
+                : ''
+            }"
+            type="button"
+            title="${color.name}"
+            aria-label="${color.name}"
+            onclick="setFundStorageColor('${color.value}')"
+          >
+            <span
+              class="color-dot"
+              style="background:${color.value}">
+            </span>
+          </button>
+        `
+      )
+      .join('');
+}
+
+function setFundStorageColor(
+  color
+) {
+  const input =
+    document.getElementById(
+      'fundDepositStorageColor'
+    );
+
+  if (!input) return;
+
+  input.value = color;
+
+  renderFundStorageColorOptions(
+    color
+  );
+}
+
+const fundStorageCombobox =
+  document.getElementById(
+    'fundStorageCombobox'
+  );
+
+const fundStorageInput =
+  document.getElementById(
+    'fundDepositStorage'
+  );
+
+const fundStorageToggle =
+  document.getElementById(
+    'fundStorageToggle'
+  );
+
+const fundStorageOptions =
+  document.getElementById(
+    'fundStorageOptions'
+  );
+
+function renderFundStorageEditColorOptions(
+  selectedColor = '#65716B'
+) {
+  const box =
+    document.getElementById(
+      'fundStorageEditColorOptions'
+    );
+
+  if (!box) return;
+
+  box.innerHTML =
+    fundStorageColors
+      .map(color => `
+        <button
+          class="color-preset ${
+            color.value === selectedColor
+              ? 'active'
+              : ''
+          }"
+          type="button"
+          data-storage-edit-color="${color.value}"
+          title="${color.name}"
+          aria-label="${color.name}">
+          <span
+            class="color-dot"
+            style="background:${color.value}">
+          </span>
+        </button>
+      `)
+      .join('');
+}
+
+function setFundStorageEditColor(
+  color
+) {
+  const input =
+    document.getElementById(
+      'fundStorageEditColor'
+    );
+
+  if (!input) return;
+
+  input.value = color;
+
+  renderFundStorageEditColorOptions(
+    color
+  );
+}
+
+function openFundStorageEditModal(
+  storage
+) {
+  const option =
+    getFundStorageOptions()
+      .find(item =>
+        normalizeFundStorageName(
+          item.name
+        ) ===
+        normalizeFundStorageName(
+          storage
+        )
+      );
+
+  if (
+    !option ||
+    normalizeFundStorageName(
+      option.name
+    ) === 'unassigned'
+  ) {
+    return;
+  }
+
+  document.getElementById(
+    'fundStorageOriginalName'
+  ).value = option.name;
+
+  document.getElementById(
+    'fundStorageEditName'
+  ).value = option.name;
+
+  document.getElementById(
+    'fundStorageEditColor'
+  ).value = option.color;
+
+  renderFundStorageEditColorOptions(
+    option.color
+  );
+
+  closeFundStorageDropdown();
+
+  openModal(
+    'fundStorageEditModal'
+  );
+}
+
+function deleteFundStorage(
+  storage
+) {
+  const normalizedStorage =
+    normalizeFundStorageName(
+      storage
+    );
+
+  if (
+    !normalizedStorage ||
+    normalizedStorage ===
+      'unassigned'
+  ) {
+    return;
+  }
+
+  const affectedRecords =
+    (data.fundDeposits || [])
+      .filter(item =>
+        normalizeFundStorageName(
+          item.storage ||
+          'Unassigned'
+        ) === normalizedStorage
+      );
+
+  openDeleteConfirmation({
+    title:
+      'Delete storage?',
+
+    message:
+      `Delete “${storage}”? ` +
+      `${affectedRecords.length} fund record(s) will be moved to Unassigned. ` +
+      `No money or fund history will be deleted.`,
+
+    confirmLabel:
+      'Delete storage',
+
+    onConfirm: () => {
+      data.fundDeposits =
+        (data.fundDeposits || [])
+          .map(item => {
+            const itemStorage =
+              normalizeFundStorageName(
+                item.storage ||
+                'Unassigned'
+              );
+
+            if (
+              itemStorage !==
+              normalizedStorage
+            ) {
+              return item;
+            }
+
+            return {
+              ...item,
+
+              storage:
+                'Unassigned',
+
+              storageColor:
+                '#7B8A83'
+            };
+          });
+
+      if (
+        normalizeFundStorageName(
+          fundStorageInput?.value
+        ) === normalizedStorage
+      ) {
+        fundStorageInput.value =
+          'Unassigned';
+
+        setFundStorageColor(
+          '#7B8A83'
+        );
+      }
+
+      saveData(
+        'fundDeposits'
+      );
+
+      render();
+
+      renderFundStorageSuggestions(
+        fundStorageInput?.value || ''
+      );
+    }
+  });
+}
+
+function openFundStorageDropdown() {
+  if (
+    !fundStorageCombobox ||
+    !fundStorageInput
+  ) {
+    return;
+  }
+
+  renderFundStorageSuggestions(
+    fundStorageInput.value
+  );
+
+  fundStorageCombobox
+    .classList.add('open');
+
+  fundStorageInput.setAttribute(
+    'aria-expanded',
+    'true'
+  );
+}
+
+function closeFundStorageDropdown() {
+  fundStorageCombobox
+    ?.classList.remove('open');
+
+  fundStorageInput
+    ?.setAttribute(
+      'aria-expanded',
+      'false'
+    );
+}
+function selectFundStorage(
+  storage
+) {
+  if (!fundStorageInput) return;
+
+  fundStorageInput.value =
+    storage;
+
+  const editingId =
+    document.getElementById(
+      'editingFundDepositId'
+    )?.value || '';
+
+  const existingColor =
+    getExistingFundStorageColor(
+      storage,
+      editingId
+    );
+
+  const matchingOption =
+    getFundStorageOptions()
+      .find(option =>
+        normalizeFundStorageName(
+          option.name
+        ) ===
+        normalizeFundStorageName(
+          storage
+        )
+      );
+
+  const selectedColor =
+    existingColor ||
+    matchingOption?.color ||
+    getNextFundStorageColor(
+      editingId
+    );
+
+  setFundStorageColor(
+    selectedColor
+  );
+
+  closeFundStorageDropdown();
+}
+
+fundStorageInput
+  ?.addEventListener(
+    'focus',
+    openFundStorageDropdown
+  );
+
+fundStorageInput
+  ?.addEventListener(
+    'input',
+    event => {
+      renderFundStorageSuggestions(
+        event.target.value
+      );
+
+      openFundStorageDropdown();
+    }
+  );
+
+fundStorageToggle
+  ?.addEventListener(
+    'click',
+    event => {
+      event.stopPropagation();
+
+      const isOpen =
+        fundStorageCombobox
+          ?.classList.contains(
+            'open'
+          );
+
+      if (isOpen) {
+        closeFundStorageDropdown();
+      } else {
+        fundStorageInput?.focus();
+        openFundStorageDropdown();
+      }
+    }
+  );
+
+fundStorageOptions
+  ?.addEventListener(
+    'click',
+    event => {
+      const actionButton =
+        event.target.closest(
+          '[data-storage-action]'
+        );
+
+      if (actionButton) {
+        event.stopPropagation();
+
+        const storage =
+          decodeURIComponent(
+            actionButton.dataset
+              .storageName
+          );
+
+        if (
+          actionButton.dataset
+            .storageAction ===
+            'edit'
+        ) {
+          openFundStorageEditModal(
+            storage
+          );
+        } else {
+          closeFundStorageDropdown();
+
+          deleteFundStorage(
+            storage
+          );
+        }
+
+        return;
+      }
+
+      const option =
+        event.target.closest(
+          '[data-storage]'
+        );
+
+      if (!option) return;
+
+      selectFundStorage(
+        decodeURIComponent(
+          option.dataset.storage
+        )
+      );
+    }
+  );
+
+document.addEventListener(
+  'click',
+  event => {
+    if (
+      !fundStorageCombobox
+        ?.contains(event.target)
+    ) {
+      closeFundStorageDropdown();
+    }
+  }
+);
+
+document
+  .getElementById(
+    'fundStorageEditColorOptions'
+  )
+  ?.addEventListener(
+    'click',
+    event => {
+      const button =
+        event.target.closest(
+          '[data-storage-edit-color]'
+        );
+
+      if (!button) return;
+
+      setFundStorageEditColor(
+        button.dataset
+          .storageEditColor
+      );
+    }
+  );
+
+  document
+  .getElementById(
+    'fundStorageEditForm'
+  )
+  ?.addEventListener(
+    'submit',
+    event => {
+      event.preventDefault();
+
+      const originalName =
+        document.getElementById(
+          'fundStorageOriginalName'
+        ).value.trim();
+
+      const nextName =
+        document.getElementById(
+          'fundStorageEditName'
+        ).value.trim();
+
+      const nextColor =
+        document.getElementById(
+          'fundStorageEditColor'
+        ).value ||
+        '#65716B';
+
+      const originalKey =
+        normalizeFundStorageName(
+          originalName
+        );
+
+      const nextKey =
+        normalizeFundStorageName(
+          nextName
+        );
+
+      if (
+        !originalKey ||
+        !nextKey ||
+        originalKey ===
+          'unassigned'
+      ) {
+        return;
+      }
+
+      const resolvedColor =
+        nextKey === 'unassigned'
+          ? '#7B8A83'
+          : nextColor;
+
+      data.fundDeposits =
+        (data.fundDeposits || [])
+          .map(item => {
+            const itemKey =
+              normalizeFundStorageName(
+                item.storage ||
+                'Unassigned'
+              );
+
+            /*
+              This also supports merging:
+              renaming GCash to BPI combines
+              every GCash and BPI deposit.
+            */
+            if (
+              itemKey !== originalKey &&
+              itemKey !== nextKey
+            ) {
+              return item;
+            }
+
+            return {
+              ...item,
+
+              storage:
+                nextName,
+
+              storageColor:
+                resolvedColor
+            };
+          });
+
+      if (
+        normalizeFundStorageName(
+          fundStorageInput?.value
+        ) === originalKey
+      ) {
+        fundStorageInput.value =
+          nextName;
+
+        setFundStorageColor(
+          resolvedColor
+        );
+      }
+
+      saveData(
+        'fundDeposits'
+      );
+
+      closeModal(
+        'fundStorageEditModal'
+      );
+
+      render();
+
+      renderFundStorageSuggestions(
+        fundStorageInput?.value || ''
+      );
+    }
+  );
 
 function setPage(id){
   const validPages = [
@@ -793,13 +2098,133 @@ function setPage(id){
 render();
 }
 
-function openModal(id){
-  document.getElementById(id).classList.add('open')}
+function openModal(
+  id
+) {
+  document
+    .getElementById(id)
+    ?.classList.add(
+      'open'
+    );
+
+  refreshAllDateDisplays();
+}
+
 function closeModal(id){
   document.getElementById(id).classList.remove('open')}
 function toggleQuick(){
   document.getElementById('quickMenu').classList.toggle('open')}
-let pendingDeleteAction = null;
+const menuToggle =
+  document.getElementById(
+    'menuToggle'
+  );
+
+const mainNav =
+  document.getElementById(
+    'mainNav'
+  );
+
+const navBackdrop =
+  document.getElementById(
+    'navBackdrop'
+  );
+
+function setMobileNavOpen(
+  shouldOpen
+) {
+  if (
+    !menuToggle ||
+    !mainNav ||
+    !navBackdrop
+  ) {
+    return;
+  }
+
+  mainNav.classList.toggle(
+    'open',
+    shouldOpen
+  );
+
+  navBackdrop.classList.toggle(
+    'open',
+    shouldOpen
+  );
+
+  menuToggle.classList.toggle(
+    'open',
+    shouldOpen
+  );
+
+  menuToggle.setAttribute(
+    'aria-expanded',
+    String(shouldOpen)
+  );
+
+  menuToggle.setAttribute(
+    'aria-label',
+    shouldOpen
+      ? 'Close navigation'
+      : 'Open navigation'
+  );
+}
+
+function toggleMobileNav() {
+  const isOpen =
+    mainNav?.classList.contains(
+      'open'
+    );
+
+  setMobileNavOpen(!isOpen);
+}
+
+function closeMobileNav() {
+  setMobileNavOpen(false);
+}
+
+menuToggle?.addEventListener(
+  'click',
+  event => {
+    event.stopPropagation();
+    toggleMobileNav();
+  }
+);
+
+navBackdrop?.addEventListener(
+  'click',
+  closeMobileNav
+);
+
+mainNav?.addEventListener(
+  'click',
+  event => {
+    if (
+      event.target.closest(
+        '[data-page]'
+      )
+    ) {
+      closeMobileNav();
+    }
+  }
+);
+
+window.addEventListener(
+  'keydown',
+  event => {
+    if (event.key === 'Escape') {
+      closeMobileNav();
+    }
+  }
+);
+
+window.addEventListener(
+  'resize',
+  () => {
+    if (window.innerWidth > 900) {
+      closeMobileNav();
+    }
+  }
+);
+  let pendingDeleteAction = null;
 
 function openDeleteConfirmation({
   title = 'Delete item?',
@@ -884,23 +2309,105 @@ window.addEventListener(
     }
   }
 );
-function openFundDepositModal(id = ''){
-  const item = data.fundDeposits.find(f => f.id === id);
+function openFundDepositModal(
+  id = ''
+) {
+  const item =
+    data.fundDeposits.find(
+      deposit =>
+        deposit.id === id
+    );
 
-  editingFundDepositId.value = item?.id || '';
-  fundDepositType.value = item?.fundType || 'pregnancy';
-  fundDepositAmount.value = item?.amount || '';
-  fundDepositDate.value = item?.date || todayISO();
-  fundDepositAddedBy.value = item?.addedBy || 'Maggie';
+  const storageName =
+    item
+      ? (
+          item.storage ||
+          'Unassigned'
+        )
+      : '';
 
-  const title = document.querySelector('#fundDepositModal h2');
-  const submitBtn = document.querySelector('#fundDepositForm button[type="submit"]');
+  const storageColor =
+    item?.storageColor ||
+    getExistingFundStorageColor(
+      storageName,
+      item?.id
+    ) ||
+    getNextFundStorageColor(
+      item?.id
+    );
 
-  if (title) title.textContent = item ? 'Edit money added' : 'Add money to fund';
-  if (submitBtn) submitBtn.textContent = item ? 'Save changes' : 'Add money';
+  document.getElementById(
+    'editingFundDepositId'
+  ).value = item?.id || '';
 
-  openModal('fundDepositModal');
+  document.getElementById(
+    'fundDepositType'
+  ).value =
+    item?.fundType ||
+    'pregnancy';
+
+  document.getElementById(
+    'fundDepositAmount'
+  ).value =
+    item?.amount || '';
+
+  document.getElementById(
+    'fundDepositDate'
+  ).value =
+    item?.date ||
+    todayISO();
+
+  document.getElementById(
+    'fundDepositAddedBy'
+  ).value =
+    item?.addedBy ||
+    'Maggie';
+
+  document.getElementById(
+    'fundDepositStorage'
+  ).value =
+    storageName;
+
+  document.getElementById(
+    'fundDepositStorageColor'
+  ).value =
+    storageColor;
+
+  renderFundStorageSuggestions();
+
+  renderFundStorageColorOptions(
+    storageColor
+  );
+
+  const title =
+    document.querySelector(
+      '#fundDepositModal h2'
+    );
+
+  const submitButton =
+    document.querySelector(
+      '#fundDepositForm button[type="submit"]'
+    );
+
+  if (title) {
+    title.textContent =
+      item
+        ? 'Edit money added'
+        : 'Add money to fund';
+  }
+
+  if (submitButton) {
+    submitButton.textContent =
+      item
+        ? 'Save changes'
+        : 'Add money';
+  }
+
+  openModal(
+    'fundDepositModal'
+  );
 }
+
 function openFundGoalModal(){
   pregnancyGoalInput.value = data.settings.pregnancyGoal || '';
   hospitalGoalInput.value = data.settings.hospitalGoal || '';
@@ -1183,6 +2690,30 @@ document
         item => item.id === id
       );
 
+      const storage =
+  document.getElementById(
+    'fundDepositStorage'
+  ).value.trim() ||
+  'Unassigned';
+
+const existingStorageColor =
+  getExistingFundStorageColor(
+    storage,
+    id
+  );
+
+const selectedStorageColor =
+  document.getElementById(
+    'fundDepositStorageColor'
+  ).value;
+
+const storageColor =
+  existingStorageColor ||
+  selectedStorageColor ||
+  getNextFundStorageColor(
+    id
+  );
+
     const deposit = {
       id,
 
@@ -1198,13 +2729,17 @@ document
           'fundDepositAddedBy'
         ).value,
 
-      fundType:
-        document.getElementById(
-          'fundDepositType'
-        ).value,
+fundType:
+  document.getElementById(
+    'fundDepositType'
+  ).value,
 
-      createdAt:
-        existing?.createdAt || Date.now()
+storage,
+
+storageColor,
+
+createdAt:
+  existing?.createdAt || Date.now()
     };
 
     const index =
@@ -1509,6 +3044,189 @@ closeModal('importantDateModal');
 renderImportantCalendar();
 });
 
+function getFundStorageBreakdown(
+  fundType
+) {
+  const groups =
+    new Map();
+
+  (data.fundDeposits || [])
+    .forEach(item => {
+      if (
+        item.fundType !== fundType
+      ) {
+        return;
+      }
+
+      const amount =
+        Number(item.amount) || 0;
+
+      if (amount <= 0) return;
+
+      const storage =
+        String(
+          item.storage ||
+          'Unassigned'
+        ).trim() ||
+        'Unassigned';
+
+      const key =
+        normalizeFundStorageName(
+          storage
+        );
+
+      const color =
+        key === 'unassigned'
+          ? '#7B8A83'
+          : getFundDepositStorageColor(
+              item
+            );
+
+      const existing =
+        groups.get(key);
+
+      if (existing) {
+        existing.amount += amount;
+      } else {
+        groups.set(
+          key,
+          {
+            name: storage,
+            color,
+            amount
+          }
+        );
+      }
+    });
+
+  return [
+    ...groups.values()
+  ].sort(
+    (a, b) => {
+      const aUnassigned =
+        normalizeFundStorageName(
+          a.name
+        ) === 'unassigned';
+
+      const bUnassigned =
+        normalizeFundStorageName(
+          b.name
+        ) === 'unassigned';
+
+      if (
+        aUnassigned !==
+        bUnassigned
+      ) {
+        return aUnassigned
+          ? 1
+          : -1;
+      }
+
+      return b.amount - a.amount;
+    }
+  );
+}
+
+function renderFundStorageProgress({
+  progressId,
+  legendId = '',
+  fundType,
+  goal
+}) {
+  const fill =
+    document.getElementById(
+      progressId
+    );
+
+  if (!fill) return;
+
+  const breakdown =
+    getFundStorageBreakdown(
+      fundType
+    );
+
+  const total =
+    breakdown.reduce(
+      (sum, item) =>
+        sum + item.amount,
+      0
+    );
+
+  fill.classList.add(
+    'storage-progress-fill'
+  );
+
+  fill.style.width =
+    percent(
+      total,
+      goal
+    ) + '%';
+
+  fill.innerHTML =
+    total > 0
+      ? breakdown
+          .map(item => {
+            const segmentPercent =
+              (
+                item.amount /
+                total
+              ) * 100;
+
+            return `
+              <span
+                class="fund-storage-segment"
+                style="
+                  width:${segmentPercent}%;
+                  background:${item.color};
+                "
+                title="${escapeHtml(item.name)}: ${escapeHtml(money(item.amount))}"
+                aria-label="${escapeHtml(item.name)}: ${escapeHtml(money(item.amount))}"
+              ></span>
+            `;
+          })
+          .join('')
+      : '';
+
+  const legend =
+    legendId
+      ? document.getElementById(
+          legendId
+        )
+      : null;
+
+  if (!legend) return;
+
+  if (!breakdown.length) {
+    legend.innerHTML = `
+      <span class="fund-storage-legend-empty">
+        No saved money yet.
+      </span>
+    `;
+
+    return;
+  }
+
+  legend.innerHTML =
+    breakdown
+      .map(item => `
+        <div class="fund-storage-legend-item">
+          <span
+            class="storage-dot"
+            style="background:${item.color}">
+          </span>
+
+          <span>
+            ${escapeHtml(item.name)}
+          </span>
+
+          <strong>
+            ${money(item.amount)}
+          </strong>
+        </div>
+      `)
+      .join('');
+}
+
   function categoryTotals(){
     const t={};data.expenses.forEach(e=>t[e.category]=(t[e.category]||0)+Number(e.amount||0));return t}
 function render(){
@@ -1545,8 +3263,29 @@ setText('babyIcon','🌱')}else{
   setText('babyIcon',info.week<14?'🌱':info.week<28?'🍋':'👶')}
   setText('homeSaved',money(totalSaved));
   setText('homeExpenses',money(totalExpenses));
-updateProgress('pregFundProgress', fundTotals.pregnancy, data.settings.pregnancyGoal);
-updateProgress('hospitalFundProgress', fundTotals.hospital, data.settings.hospitalGoal);
+renderFundStorageProgress({
+  progressId:
+    'pregFundProgress',
+
+  fundType:
+    'pregnancy',
+
+  goal:
+    data.settings
+      .pregnancyGoal
+});
+
+renderFundStorageProgress({
+  progressId:
+    'hospitalFundProgress',
+
+  fundType:
+    'hospital',
+
+  goal:
+    data.settings
+      .hospitalGoal
+});
 
 setText('pregFundLabel', `${money(fundTotals.pregnancy)} / ${money(data.settings.pregnancyGoal)}`);
 setText('hospitalFundLabel', `${money(fundTotals.hospital)} / ${money(data.settings.hospitalGoal)}`);
@@ -1569,8 +3308,35 @@ const weeksLeft = info ? Math.max(1, Math.ceil(info.daysLeft / 7)) : 0,
  setText('pregnancyGoalCard', money(data.settings.pregnancyGoal));
 setText('hospitalGoalCard', money(data.settings.hospitalGoal));
 renderFundDeposits();
-updateProgress('fundPagePregProgress', fundTotals.pregnancy, data.settings.pregnancyGoal);
-updateProgress('fundPageHospitalProgress', fundTotals.hospital, data.settings.hospitalGoal);
+renderFundStorageProgress({
+  progressId:
+    'fundPagePregProgress',
+
+  legendId:
+    'fundPagePregLegend',
+
+  fundType:
+    'pregnancy',
+
+  goal:
+    data.settings
+      .pregnancyGoal
+});
+
+renderFundStorageProgress({
+  progressId:
+    'fundPageHospitalProgress',
+
+  legendId:
+    'fundPageHospitalLegend',
+
+  fundType:
+    'hospital',
+
+  goal:
+    data.settings
+      .hospitalGoal
+});
 
 setText('fundPagePregLabel', `${money(fundTotals.pregnancy)} / ${money(data.settings.pregnancyGoal)}`);
 setText('fundPageHospitalLabel', `${money(fundTotals.hospital)} / ${money(data.settings.hospitalGoal)}`);
@@ -1597,8 +3363,19 @@ setText(
       <div class="record-icon">${item.fundType === 'pregnancy' ? '🤰' : '🏥'}</div>
       <div>
         <div class="record-title">${item.fundType === 'pregnancy' ? 'Pregnancy Fund' : 'Hospital Bill Fund'}</div>
-        <div class="record-meta">${formatDate(item.date)} · Added by ${escapeHtml(item.addedBy || '—')}</div>
-      </div>
+<div class="record-meta storage-meta">
+  <span
+    class="storage-dot"
+    style="background:${getFundDepositStorageColor(item)}">
+  </span>
+
+  <span>
+    ${escapeHtml(item.storage || 'Unassigned')}
+    · ${formatDate(item.date)}
+    · Added by ${escapeHtml(item.addedBy || '—')}
+  </span>
+</div>
+        </div>
       <div>
   <div class="record-amount">${money(item.amount)}</div>
 <div class="mini-actions">
@@ -2181,6 +3958,9 @@ window.openImportantDateModalForDate =
 
 window.setImportantDateColor =
   setImportantDateColor;
+
+  window.setFundStorageColor =
+  setFundStorageColor;
 
   window.deleteFundDeposit =
   deleteFundDeposit;

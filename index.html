@@ -9,9 +9,26 @@
 <body>
 <header class="header">
   <div class="header-content">
-    <div class="logo">MaggieBump</div>
+<div class="logo">MaggieBump</div>
 
-<nav class="tab-row">
+<button
+  class="menu-toggle"
+  id="menuToggle"
+  type="button"
+  aria-label="Open navigation"
+  aria-controls="mainNav"
+  aria-expanded="false"
+>
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
+<nav
+  class="tab-row"
+  id="mainNav"
+  aria-label="Main navigation"
+>
   <button class="tab-btn active" data-page="homePage">
     Home
   </button>
@@ -46,6 +63,12 @@
 </nav>
 </div>
 </header>
+
+<div
+  class="nav-backdrop"
+  id="navBackdrop"
+></div>
+
 <main class="app">
 <section id="homePage" class="page active">
   <section class="hero">
@@ -149,9 +172,17 @@
         <span>Pregnancy Fund</span>
         <span id="fundPagePregLabel">₱0 / ₱0</span>
       </div>
-      <div class="progress">
-        <div class="progress-fill" id="fundPagePregProgress"></div>
-      </div>
+<div class="progress">
+  <div
+    class="progress-fill"
+    id="fundPagePregProgress">
+  </div>
+</div>
+
+<div
+  class="fund-storage-legend"
+  id="fundPagePregLegend">
+</div>
     </div>
 
     <div class="progress-wrap">
@@ -159,9 +190,17 @@
         <span>Hospital Fund</span>
         <span id="fundPageHospitalLabel">₱0 / ₱0</span>
       </div>
-      <div class="progress">
-        <div class="progress-fill" id="fundPageHospitalProgress"></div>
-      </div>
+<div class="progress">
+  <div
+    class="progress-fill"
+    id="fundPageHospitalProgress">
+  </div>
+</div>
+
+<div
+  class="fund-storage-legend"
+  id="fundPageHospitalLegend">
+</div>
     </div>
 
     <p class="subtitle" id="savingsAdvice">
@@ -372,8 +411,31 @@
         </div>
 
         <div>
-          <label>Date added</label>
-          <input id="fundDepositDate" type="date" required>
+<label>Date added</label>
+
+<div class="date-field">
+  <input
+    id="fundDepositDate"
+    type="hidden"
+  >
+
+  <button
+    class="date-field-button"
+    type="button"
+    data-date-input="fundDepositDate"
+    aria-haspopup="dialog"
+  >
+    <span
+      class="date-field-text"
+      data-date-display-for="fundDepositDate">
+      Select date
+    </span>
+
+    <span class="date-field-icon">
+      📅
+    </span>
+  </button>
+</div>
         </div>
       </div>
 
@@ -394,6 +456,58 @@
           </select>
         </div>
       </div>
+
+      <div class="row">
+  <div>
+    <label>Where is the money stored?</label>
+
+<div
+  class="storage-combobox"
+  id="fundStorageCombobox"
+>
+  <input
+    id="fundDepositStorage"
+    type="text"
+    placeholder="Ex. GCash, BPI, Maya, GoTyme"
+    autocomplete="off"
+    aria-autocomplete="list"
+    aria-expanded="false"
+    required
+  >
+
+  <button
+    class="storage-dropdown-toggle"
+    id="fundStorageToggle"
+    type="button"
+    aria-label="Show storage locations"
+  >
+    ▼
+  </button>
+
+  <div
+    class="storage-dropdown"
+    id="fundStorageOptions"
+    role="listbox"
+  ></div>
+</div>
+
+  </div>
+
+  <div>
+    <label>Storage color</label>
+
+    <input
+      id="fundDepositStorageColor"
+      type="hidden"
+      value="#65716B"
+    >
+
+    <div
+      id="fundDepositStorageColorOptions"
+      class="color-preset-grid">
+    </div>
+  </div>
+</div>
 
       <div class="modal-actions">
         <button class="btn" type="button" onclick="closeModal('fundDepositModal')">Cancel</button>
@@ -578,6 +692,167 @@
     </div>
   </form>
 </div>
+</div>
+
+<div
+  class="modal-backdrop"
+  id="fundStorageEditModal"
+>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit storage</h2>
+
+      <button
+        type="button"
+        onclick="closeModal('fundStorageEditModal')">
+        Close
+      </button>
+    </div>
+
+    <form
+      class="form"
+      id="fundStorageEditForm"
+    >
+      <input
+        id="fundStorageOriginalName"
+        type="hidden"
+      >
+
+      <input
+        id="fundStorageEditColor"
+        type="hidden"
+        value="#65716B"
+      >
+
+      <div>
+        <label>Storage name</label>
+
+        <input
+          id="fundStorageEditName"
+          type="text"
+          placeholder="Ex. GCash, BPI, Maya"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <div>
+        <label>Storage color</label>
+
+        <div
+          id="fundStorageEditColorOptions"
+          class="color-preset-grid">
+        </div>
+      </div>
+
+      <p class="hint">
+        Changes apply to every fund record
+        currently using this storage.
+      </p>
+
+      <div class="modal-actions">
+        <button
+          class="btn"
+          type="button"
+          onclick="closeModal('fundStorageEditModal')">
+          Cancel
+        </button>
+
+        <button
+          class="btn primary"
+          type="submit">
+          Save storage
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div
+  class="modal-backdrop date-picker-backdrop"
+  id="datePickerModal"
+>
+  <div class="modal date-picker-modal">
+    <div class="modal-header">
+      <div>
+        <p class="date-picker-kicker">
+          Choose a date
+        </p>
+
+        <h2 id="datePickerTitle">
+          Month Year
+        </h2>
+      </div>
+
+      <button
+        id="datePickerCloseBtn"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="date-picker-navigation">
+      <button
+        class="date-picker-nav-button"
+        id="datePickerPrevBtn"
+        type="button"
+        aria-label="Previous month">
+        ←
+      </button>
+
+      <button
+        class="btn"
+        id="datePickerTodayBtn"
+        type="button">
+        Today
+      </button>
+
+      <button
+        class="date-picker-nav-button"
+        id="datePickerNextBtn"
+        type="button"
+        aria-label="Next month">
+        →
+      </button>
+    </div>
+
+    <div class="date-picker-weekdays">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+    </div>
+
+    <div
+      class="date-picker-grid"
+      id="datePickerGrid">
+    </div>
+
+    <p
+      class="date-picker-selected-text"
+      id="datePickerSelectedText">
+      No date selected
+    </p>
+
+    <div class="modal-actions">
+      <button
+        class="btn"
+        id="datePickerCancelBtn"
+        type="button">
+        Cancel
+      </button>
+
+      <button
+        class="btn primary"
+        id="datePickerUseBtn"
+        type="button">
+        Use date
+      </button>
+    </div>
+  </div>
 </div>
 
 <div
