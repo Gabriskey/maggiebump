@@ -4,64 +4,263 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MaggieBump</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=8">
 </head>
 <body>
-<header class="header">
-  <div class="header-content">
-<div class="logo">MaggieBump</div>
+  <!-- =====================================
+     DESKTOP AND MOBILE SIDEBAR
+====================================== -->
 
-<button
-  class="menu-toggle"
-  id="menuToggle"
-  type="button"
-  aria-label="Open navigation"
-  aria-controls="mainNav"
-  aria-expanded="false"
+<aside
+  class="app-sidebar"
+  id="appSidebar"
+  aria-label="MaggieBump navigation"
 >
-  <span></span>
-  <span></span>
-  <span></span>
-</button>
+  <div class="sidebar-brand-row">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand-text">
+        MaggieBump
+      </span>
+    </div>
 
-<nav
-  class="tab-row"
-  id="mainNav"
-  aria-label="Main navigation"
->
-  <button class="tab-btn active" data-page="homePage">
-    Home
-  </button>
+    <button
+      class="sidebar-collapse-toggle"
+      id="sidebarCollapseToggle"
+      type="button"
+      aria-label="Expand sidebar"
+      aria-expanded="false"
+      title="Expand sidebar"
+    >
+      <svg
+        class="sidebar-collapse-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="m9 18 6-6-6-6"></path>
+      </svg>
+    </button>
+  </div>
 
-  <button class="tab-btn" data-page="fundPage">
-    Funds
-  </button>
+  <nav
+    class="tab-row sidebar-nav"
+    id="mainNav"
+    aria-label="Main navigation"
+  >
+    <button
+      class="tab-btn active"
+      data-page="homePage"
+      type="button"
+      title="Home"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="m3 11 9-8 9 8"></path>
+        <path d="M5 10v10h14V10"></path>
+        <path d="M9 20v-6h6v6"></path>
+      </svg>
 
-  <button class="tab-btn" data-page="expensePage">
-    Expenses
-  </button>
+      <span class="sidebar-label">
+        Home
+      </span>
+    </button>
 
-  <button class="tab-btn" data-page="appointmentPage">
-    Appointments
-  </button>
+    <button
+      class="tab-btn"
+      data-page="fundPage"
+      type="button"
+      title="Funds"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M3 6h16a2 2 0 0 1 2 2v10H5a2 2 0 0 1-2-2Z"></path>
+        <path d="M3 6a2 2 0 0 1 2-2h12v4"></path>
+        <path d="M16 12h5"></path>
+        <circle cx="16" cy="12" r="1"></circle>
+      </svg>
 
-  <button class="tab-btn" data-page="notesPage">
-    Notes
-  </button>
+      <span class="sidebar-label">
+        Funds
+      </span>
+    </button>
 
-  <button class="tab-btn" data-page="checklistPage">
-    Checklists
-  </button>
+    <button
+      class="tab-btn"
+      data-page="expensePage"
+      type="button"
+      title="Expenses"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"></path>
+        <path d="M9 8h6"></path>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h3"></path>
+      </svg>
 
-  <button class="tab-btn" data-page="importantDatesPage">
-    Important Dates
-  </button>
+      <span class="sidebar-label">
+        Expenses
+      </span>
+    </button>
 
-  <button class="tab-btn" data-page="archivePage">
-    Archive
+    <button
+      class="tab-btn"
+      data-page="appointmentPage"
+      type="button"
+      title="Appointments"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="16"
+          rx="2"
+        ></rect>
+
+        <path d="M16 3v4"></path>
+        <path d="M8 3v4"></path>
+        <path d="M3 10h18"></path>
+        <path d="m9 15 2 2 4-4"></path>
+      </svg>
+
+      <span class="sidebar-label">
+        Appointments
+      </span>
+    </button>
+
+    <button
+      class="tab-btn"
+      data-page="notesPage"
+      type="button"
+      title="Notes"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M5 3h10l4 4v14H5Z"></path>
+        <path d="M14 3v5h5"></path>
+        <path d="M8 13h8"></path>
+        <path d="M8 17h6"></path>
+      </svg>
+
+      <span class="sidebar-label">
+        Notes
+      </span>
+    </button>
+
+    <button
+      class="tab-btn"
+      data-page="checklistPage"
+      type="button"
+      title="Checklists"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="m4 7 2 2 3-4"></path>
+        <path d="M11 7h9"></path>
+        <path d="m4 14 2 2 3-4"></path>
+        <path d="M11 14h9"></path>
+        <path d="M4 21h5"></path>
+        <path d="M11 21h9"></path>
+      </svg>
+
+      <span class="sidebar-label">
+        Checklists
+      </span>
+    </button>
+
+    <button
+      class="tab-btn"
+      data-page="importantDatesPage"
+      type="button"
+      title="Important Dates"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="16"
+          rx="2"
+        ></rect>
+
+        <path d="M16 3v4"></path>
+        <path d="M8 3v4"></path>
+        <path d="M3 10h18"></path>
+        <path d="m12 13 1 2 2 .3-1.5 1.5.4 2.2-1.9-1-1.9 1 .4-2.2L9 15.3l2-.3Z"></path>
+      </svg>
+
+      <span class="sidebar-label">
+        Important Dates
+      </span>
+    </button>
+
+    <button
+      class="tab-btn"
+      data-page="archivePage"
+      type="button"
+      title="Archive"
+    >
+      <svg
+        class="sidebar-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M4 7h16v14H4Z"></path>
+        <path d="M3 3h18v4H3Z"></path>
+        <path d="M9 12h6"></path>
+      </svg>
+
+      <span class="sidebar-label">
+        Archive
+      </span>
+    </button>
+  </nav>
+</aside>
+
+<!-- Mobile-only top bar -->
+
+<header class="mobile-header">
+  <div class="mobile-brand">
+    <span class="mobile-brand-text">
+      MaggieBump
+    </span>
+  </div>
+
+  <button
+    class="menu-toggle"
+    id="menuToggle"
+    type="button"
+    aria-label="Open navigation"
+    aria-controls="appSidebar"
+    aria-expanded="false"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
   </button>
-</nav>
-</div>
 </header>
 
 <div
@@ -289,72 +488,130 @@
   </section>
 </section>
 
-
 <section id="checklistPage" class="page">
   <section class="card">
-    <div class="toolbar">
-      <h2>Preparation Checklists</h2>
+    <div class="toolbar checklist-toolbar">
+      <div>
+        <h2>Preparation Checklists</h2>
 
-      <select
-        id="checklistType">
+        <p class="hint">
+          Add optional deadlines and sort dated tasks
+          from soonest to latest.
+        </p>
+      </div>
 
-        <option value="prepare">
-          Things to prepare
-        </option>
+      <div class="checklist-controls">
+        <label class="checklist-control">
+          <span>Checklist</span>
 
-        <option value="hospital">
-          Hospital bag
-        </option>
+          <select id="checklistType">
+            <option value="prepare">
+              Things to prepare
+            </option>
 
-        <option value="baby">
-          Baby essentials
-        </option>
-      </select>
+            <option value="hospital">
+              Hospital bag
+            </option>
+
+            <option value="baby">
+              Baby essentials
+            </option>
+          </select>
+        </label>
+
+<div class="checklist-sort-control">
+  <span class="checklist-sort-label">
+    Sort
+  </span>
+
+  <button
+    class="btn checklist-sort-toggle"
+    id="checklistSortToggle"
+    type="button"
+    data-sort-mode="default"
+    aria-pressed="false"
+  >
+    <span id="checklistSortToggleText">
+      Sort by deadline
+    </span>
+  </button>
+</div>
+      </div>
     </div>
 
     <div id="checklist" class="check-list"></div>
   </section>
 </section>
 
-
 <section id="importantDatesPage" class="page">
-  <section class="card">
-    <div class="toolbar">
-      <div>
-        <h2>Important Dates</h2>
+  <section class="important-dates-layout">
 
-        <p class="hint">
-          Click any day to add a memory, milestone,
-          or important pregnancy date.
-        </p>
+    <!-- Left column: calendar -->
+    <section
+      class="
+        card
+        important-dates-panel
+        important-dates-calendar-panel
+      "
+    >
+      <div class="toolbar">
+        <div>
+          <h2>Important Dates</h2>
+
+          <p class="hint">
+            Click any day to add a memory,
+            milestone, or important pregnancy date.
+          </p>
+        </div>
+
+        <button
+          class="btn primary"
+          type="button"
+          onclick="openImportantDateModalForDate()"
+        >
+          Add Important Date
+        </button>
       </div>
 
-      <button
-        class="btn primary"
-        type="button"
-        onclick="openImportantDateModalForDate()">
-        Add Important Date
-      </button>
-    </div>
+      <div
+        id="continuousCalendar"
+        class="
+          continuous-calendar
+          important-dates-scroll
+        "
+      ></div>
+    </section>
 
-    <div
-      id="continuousCalendar"
-      class="continuous-calendar">
-    </div>
+    <!-- Right column: saved dates -->
+    <section
+      class="
+        card
+        important-dates-panel
+        important-dates-saved-panel
+      "
+    >
+      <div class="toolbar">
+        <div>
+          <h2>Saved Important Dates</h2>
 
-    <div style="height:14px"></div>
+          <p class="hint">
+            Your saved milestones and pregnancy
+            dates appear here.
+          </p>
+        </div>
+      </div>
 
-    <div class="toolbar">
-      <h2>Saved Important Dates</h2>
-    </div>
+      <div
+        id="calendarLegend"
+        class="
+          record-list
+          important-dates-saved-list
+        "
+      ></div>
+    </section>
 
-    <div
-      id="calendarLegend"
-      class="record-list">
-    </div>
   </section>
 </section>
-
 
 <section id="archivePage" class="page">
   <section class="card">
@@ -554,7 +811,30 @@
     <input id="editingExpenseId" type="hidden">
     <div class="row"><div>
       <label>Date</label>
-      <input id="expenseDate" type="date" required></div>
+      <div class="date-field">
+  <input
+    id="expenseDate"
+    type="hidden"
+  >
+
+  <button
+    class="date-field-button"
+    type="button"
+    data-date-input="expenseDate"
+    aria-haspopup="dialog"
+  >
+    <span
+      class="date-field-text"
+      data-date-display-for="expenseDate">
+      Select date
+    </span>
+
+    <span class="date-field-icon">
+      📅
+    </span>
+  </button>
+</div>
+    </div>
       <div><label>Amount</label>
         <input id="expenseAmount" type="number" step="0.01" required placeholder="0.00">
       </div></div><div class="row">
@@ -590,7 +870,30 @@
     <input id="editingAppointmentId" type="hidden">
     <div class="row">
     <div>
-      <label>Date</label><input id="appointmentDate" type="date" required>
+      <label>Date</label>
+      <div class="date-field">
+  <input
+    id="appointmentDate"
+    type="hidden"
+  >
+
+  <button
+    class="date-field-button"
+    type="button"
+    data-date-input="appointmentDate"
+    aria-haspopup="dialog"
+  >
+    <span
+      class="date-field-text"
+      data-date-display-for="appointmentDate">
+      Select date
+    </span>
+
+    <span class="date-field-icon">
+      📅
+    </span>
+  </button>
+</div>
     </div>
     <div>
         <label>Time</label>
@@ -616,6 +919,57 @@
 </div>
 </div>
 
+<div
+  class="modal-backdrop"
+  id="importantDateDetailsModal"
+>
+  <div class="modal important-date-details-modal">
+    <div class="modal-header">
+      <div>
+        <p class="important-date-details-kicker">
+          Important date
+        </p>
+
+        <h2 id="importantDateDetailsTitle">
+          Date details
+        </h2>
+      </div>
+
+      <button
+        id="importantDateDetailsCloseBtn"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <p
+      class="important-date-details-date"
+      id="importantDateDetailsDate">
+    </p>
+
+    <div
+      class="important-date-details-list"
+      id="importantDateDetailsList">
+    </div>
+
+    <div class="modal-actions">
+      <button
+        class="btn"
+        id="importantDateDetailsCancelBtn"
+        type="button">
+        Close
+      </button>
+
+      <button
+        class="btn primary"
+        id="importantDateDetailsAddBtn"
+        type="button">
+        Add another
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="importantDateModal">
   <div class="modal">
     <div class="modal-header">
@@ -630,7 +984,29 @@
       <div class="row">
         <div>
           <label>Date</label>
-          <input id="importantDateDate" type="date" required>
+          <div class="date-field">
+  <input
+    id="importantDateDate"
+    type="hidden"
+  >
+
+  <button
+    class="date-field-button"
+    type="button"
+    data-date-input="importantDateDate"
+    aria-haspopup="dialog"
+  >
+    <span
+      class="date-field-text"
+      data-date-display-for="importantDateDate">
+      Select date
+    </span>
+
+    <span class="date-field-icon">
+      📅
+    </span>
+  </button>
+</div>
         </div>
 
         <div>
@@ -669,7 +1045,30 @@
   <input id="editingNoteId" type="hidden">
     <div class="row"><div>
       <label>Date</label>
-      <input id="noteDate" type="date" required></div>
+      <div class="date-field">
+  <input
+    id="noteDate"
+    type="hidden"
+  >
+
+  <button
+    class="date-field-button"
+    type="button"
+    data-date-input="noteDate"
+    aria-haspopup="dialog"
+  >
+    <span
+      class="date-field-text"
+      data-date-display-for="noteDate">
+      Select date
+    </span>
+
+    <span class="date-field-icon">
+      📅
+    </span>
+  </button>
+</div>
+    </div>
       <div><label>Type</label>
         <select id="noteType">
   <option>Symptom</option>
@@ -692,6 +1091,121 @@
     </div>
   </form>
 </div>
+</div>
+
+<div
+  class="modal-backdrop"
+  id="checklistEditModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="checklistEditModalTitle"
+>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="checklistEditModalTitle">
+        Edit checklist item
+      </h2>
+
+      <button
+        type="button"
+        onclick="closeModal('checklistEditModal')"
+      >
+        Close
+      </button>
+    </div>
+
+    <form
+      class="form"
+      id="checklistEditForm"
+    >
+      <input
+        id="checklistEditType"
+        type="hidden"
+      >
+
+      <input
+        id="checklistEditId"
+        type="hidden"
+      >
+
+      <div>
+        <label for="checklistEditText">
+          Checklist item
+        </label>
+
+        <input
+          id="checklistEditText"
+          type="text"
+          placeholder="Enter checklist item"
+          autocomplete="off"
+          required
+        >
+      </div>
+
+      <div>
+        <label>
+          Deadline (optional)
+        </label>
+
+        <div class="checklist-edit-deadline-tools">
+          <div class="date-field">
+            <input
+              id="checklistEditDeadline"
+              type="hidden"
+            >
+
+            <button
+              class="date-field-button"
+              type="button"
+              data-date-input="checklistEditDeadline"
+              aria-haspopup="dialog"
+            >
+              <span
+                class="date-field-text"
+                data-date-display-for="checklistEditDeadline"
+              >
+                Select date
+              </span>
+
+              <span class="date-field-icon">
+                📅
+              </span>
+            </button>
+          </div>
+
+          <button
+            class="btn checklist-remove-deadline"
+            type="button"
+            onclick="clearChecklistEditDeadline()"
+          >
+            Remove deadline
+          </button>
+        </div>
+
+        <p class="hint checklist-edit-hint">
+          Removing the deadline takes effect after
+          you press Save changes.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          class="btn"
+          type="button"
+          onclick="closeModal('checklistEditModal')"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          Save changes
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div
@@ -898,6 +1412,6 @@
     </div>
   </div>
 </div>
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v8"></script>
 </body>
 </html>

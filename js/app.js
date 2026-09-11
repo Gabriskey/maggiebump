@@ -27,6 +27,8 @@ let isApplyingCloud = false;
 
 const DATA_KEY='bumptrack-data-v1';
 const ACTIVE_PAGE_KEY='maggiebump-active-page';
+const CHECKLIST_SORT_KEY='maggiebump-checklist-sort';
+const SIDEBAR_STATE_KEY='maggiebump-sidebar-expanded';
 const CALENDAR_START_DATE='2026-04-01';
 const SYNC_SECTIONS = [
   'settings',
@@ -162,7 +164,6 @@ function defaultData(){
     importantDates: []
   };
 }
-
 function normalizeChecklist(savedChecklist = {}){
   const nextChecklist = {};
 
@@ -174,23 +175,69 @@ function normalizeChecklist(savedChecklist = {}){
           text: String(item.text || '').trim(),
           done: Boolean(item.done),
           custom: Boolean(item.custom),
-          createdAt: item.createdAt || Date.now()
+
+          deadline:
+            typeof item.deadline === 'string' &&
+            /^\d{4}-\d{2}-\d{2}$/.test(item.deadline)
+              ? item.deadline
+              : '',
+
+          createdAt:
+            item.createdAt ||
+            Date.now()
         }))
         .filter(item => item.text);
     } else {
-      nextChecklist[type] = checklistTemplates[type].map(text => ({
-        id: uid('check'),
-        text,
-        done: false,
-        custom: false,
-        createdAt: Date.now()
-      }));
+      nextChecklist[type] =
+        checklistTemplates[type].map(text => ({
+          id: uid('check'),
+          text,
+          done: false,
+          custom: false,
+          deadline: '',
+          createdAt: Date.now()
+        }));
     }
   });
 
+  /*
+    Preserve any additional checklist category
+    that might be added in the future.
+  */
   Object.keys(savedChecklist || {}).forEach(type => {
-    if (!nextChecklist[type] && Array.isArray(savedChecklist[type])) {
-      nextChecklist[type] = savedChecklist[type];
+    if (
+      !nextChecklist[type] &&
+      Array.isArray(savedChecklist[type])
+    ) {
+      nextChecklist[type] =
+        savedChecklist[type]
+          .map(item => ({
+            id:
+              item.id ||
+              uid('check'),
+
+            text:
+              String(
+                item.text || ''
+              ).trim(),
+
+            done:
+              Boolean(item.done),
+
+            custom:
+              Boolean(item.custom),
+
+            deadline:
+              typeof item.deadline === 'string' &&
+              /^\d{4}-\d{2}-\d{2}$/.test(item.deadline)
+                ? item.deadline
+                : '',
+
+            createdAt:
+              item.createdAt ||
+              Date.now()
+          }))
+          .filter(item => item.text);
     }
   });
 
@@ -442,16 +489,19 @@ function mergePendingRecordSection(
     ...merged.values()
   ];
 }
-
 function getChecklistMergeKey(
   item,
   index = 0
 ){
-  if (
-    item?.custom &&
-    item?.id
-  ) {
-    return `custom:${item.id}`;
+  /*
+    Always use the checklist item's ID.
+
+    This allows the text to be edited
+    without Firebase treating it as a
+    completely different checklist item.
+  */
+  if (item?.id) {
+    return `id:${item.id}`;
   }
 
   const text =
@@ -461,7 +511,7 @@ function getChecklistMergeKey(
 
   return text
     ? `text:${text}`
-    : `item:${item?.id || index}`;
+    : `item:${index}`;
 }
 
 function mergePendingChecklist(
@@ -2114,6 +2164,7 @@ function closeModal(id){
   document.getElementById(id).classList.remove('open')}
 function toggleQuick(){
   document.getElementById('quickMenu').classList.toggle('open')}
+
 const menuToggle =
   document.getElementById(
     'menuToggle'
@@ -2129,18 +2180,101 @@ const navBackdrop =
     'navBackdrop'
   );
 
+const appSidebar =
+  document.getElementById(
+    'appSidebar'
+  );
+
+const sidebarCollapseToggle =
+  document.getElementById(
+    'sidebarCollapseToggle'
+  );
+
+/* ========================================
+   DESKTOP SIDEBAR EXPANSION
+======================================== */
+
+function setSidebarExpanded(
+  shouldExpand
+) {
+  if (
+    !appSidebar ||
+    !sidebarCollapseToggle
+  ) {
+    return;
+  }
+
+  appSidebar.classList.toggle(
+    'expanded',
+    shouldExpand
+  );
+
+  sidebarCollapseToggle.setAttribute(
+    'aria-expanded',
+    String(shouldExpand)
+  );
+
+  sidebarCollapseToggle.setAttribute(
+    'aria-label',
+    shouldExpand
+      ? 'Collapse sidebar'
+      : 'Expand sidebar'
+  );
+
+  sidebarCollapseToggle.setAttribute(
+    'title',
+    shouldExpand
+      ? 'Collapse sidebar'
+      : 'Expand sidebar'
+  );
+
+  localStorage.setItem(
+    SIDEBAR_STATE_KEY,
+    String(shouldExpand)
+  );
+}
+
+/*
+  Restore the desktop sidebar state saved
+  during the previous visit.
+*/
+setSidebarExpanded(
+  localStorage.getItem(
+    SIDEBAR_STATE_KEY
+  ) === 'true'
+);
+
+sidebarCollapseToggle
+  ?.addEventListener(
+    'click',
+    () => {
+      const isExpanded =
+        appSidebar?.classList.contains(
+          'expanded'
+        );
+
+      setSidebarExpanded(
+        !isExpanded
+      );
+    }
+  );
+
+/* ========================================
+   MOBILE SIDEBAR OPENING
+======================================== */
+
 function setMobileNavOpen(
   shouldOpen
 ) {
   if (
     !menuToggle ||
-    !mainNav ||
+    !appSidebar ||
     !navBackdrop
   ) {
     return;
   }
 
-  mainNav.classList.toggle(
+  appSidebar.classList.toggle(
     'open',
     shouldOpen
   );
@@ -2166,46 +2300,63 @@ function setMobileNavOpen(
       ? 'Close navigation'
       : 'Open navigation'
   );
+
+  /*
+    Stop the page behind the sidebar from
+    scrolling while the mobile menu is open.
+  */
+  if (window.innerWidth <= 900) {
+    document.body.style.overflow =
+      shouldOpen
+        ? 'hidden'
+        : '';
+  }
 }
 
 function toggleMobileNav() {
   const isOpen =
-    mainNav?.classList.contains(
+    appSidebar?.classList.contains(
       'open'
     );
 
-  setMobileNavOpen(!isOpen);
+  setMobileNavOpen(
+    !isOpen
+  );
 }
 
 function closeMobileNav() {
   setMobileNavOpen(false);
 }
 
-menuToggle?.addEventListener(
-  'click',
-  event => {
-    event.stopPropagation();
-    toggleMobileNav();
-  }
-);
-
-navBackdrop?.addEventListener(
-  'click',
-  closeMobileNav
-);
-
-mainNav?.addEventListener(
-  'click',
-  event => {
-    if (
-      event.target.closest(
-        '[data-page]'
-      )
-    ) {
-      closeMobileNav();
+menuToggle
+  ?.addEventListener(
+    'click',
+    event => {
+      event.stopPropagation();
+      toggleMobileNav();
     }
-  }
-);
+  );
+
+navBackdrop
+  ?.addEventListener(
+    'click',
+    closeMobileNav
+  );
+
+mainNav
+  ?.addEventListener(
+    'click',
+    event => {
+      if (
+        event.target.closest(
+          '[data-page]'
+        ) &&
+        window.innerWidth <= 900
+      ) {
+        closeMobileNav();
+      }
+    }
+  );
 
 window.addEventListener(
   'keydown',
@@ -2224,6 +2375,7 @@ window.addEventListener(
     }
   }
 );
+
   let pendingDeleteAction = null;
 
 function openDeleteConfirmation({
@@ -2448,7 +2600,10 @@ function setImportantDateColor(color){
 function openImportantDateModal(id = ''){
   syncFixedPregnancy();
 
-  const item = (data.importantDates || []).find(date => date.id === id);
+const item =
+  getImportantDates().find(
+    date => date.id === id
+  );
 
   editingImportantDateId.value = item?.id || '';
   importantDateDate.value = item?.date || todayISO();
@@ -2462,12 +2617,310 @@ function openImportantDateModal(id = ''){
   renderImportantDateColorOptions(importantDateColor.value);
   openModal('importantDateModal');
 }
-function openImportantDateModalForDate(date = todayISO()){
+function openImportantDateModalForDate(
+  date = todayISO()
+) {
   openImportantDateModal();
 
-  importantDateDate.value = date;
-  importantDateModalTitle.textContent = `Add important date for ${formatDate(date)}`;
+  importantDateDate.value =
+    date;
+
+  updateDateDisplay(
+    'importantDateDate'
+  );
+
+  importantDateModalTitle.textContent =
+    `Add important date for ${formatDate(date)}`;
 }
+
+let activeImportantDetailsDate =
+  '';
+
+function getImportantDatesForDate(
+  date
+) {
+  return getImportantDates()
+    .filter(item =>
+      item.date === date
+    )
+    .sort((a, b) =>
+      String(
+        a.time || ''
+      ).localeCompare(
+        String(
+          b.time || ''
+        )
+      )
+    );
+}
+
+function closeImportantDateDetails() {
+  closeModal(
+    'importantDateDetailsModal'
+  );
+
+  activeImportantDetailsDate =
+    '';
+}
+
+function openImportantDateDetailsForDate(
+  date
+) {
+  const items =
+    getImportantDatesForDate(
+      date
+    );
+
+  /*
+    Empty days still open the normal
+    Add Important Date modal.
+  */
+  if (!items.length) {
+    openImportantDateModalForDate(
+      date
+    );
+
+    return;
+  }
+
+  activeImportantDetailsDate =
+    date;
+
+  const title =
+    document.getElementById(
+      'importantDateDetailsTitle'
+    );
+
+  const dateText =
+    document.getElementById(
+      'importantDateDetailsDate'
+    );
+
+  const list =
+    document.getElementById(
+      'importantDateDetailsList'
+    );
+
+  if (
+    !title ||
+    !dateText ||
+    !list
+  ) {
+    return;
+  }
+
+  title.textContent =
+    items.length === 1
+      ? '1 saved entry'
+      : `${items.length} saved entries`;
+
+  dateText.textContent =
+    formatDate(date);
+
+  list.innerHTML =
+    items
+      .map(item => {
+        const encodedId =
+          encodeURIComponent(
+            item.id
+          );
+          const color =
+  item.color ||
+  '#de8f6e';
+
+const timeText =
+  item.time
+    ? item.time
+    : 'No time added';
+
+return `
+  <article
+    class="important-date-detail-card"
+  >
+    <span
+      class="important-date-detail-marker"
+      style="background:${color}">
+    </span>
+
+    <div class="important-date-detail-content">
+<div class="important-date-detail-heading">
+  <div>
+    <h3>
+      ${escapeHtml(item.title)}
+    </h3>
+
+    <p class="important-date-detail-meta">
+      ${escapeHtml(timeText)}
+    </p>
+  </div>
+</div>
+  ${escapeHtml(timeText)}
+  ${
+    item.fixed
+      ? ' · Fixed pregnancy record'
+      : ''
+  }
+</p>
+                </div>
+
+                <span class="pill">
+                  ${
+                    item.fixed
+                      ? 'Fixed'
+                      : 'Saved'
+                  }
+                </span>
+              </div>
+
+              ${
+                item.notes
+                  ? `
+                    <p class="important-date-detail-notes">
+                      ${escapeHtml(item.notes)}
+                    </p>
+                  `
+                  : `
+                    <p class="important-date-detail-notes muted">
+                      No notes added.
+                    </p>
+                  `
+              }
+
+              ${
+                item.fixed
+                  ? ''
+                  : `
+<div class="important-date-detail-actions">
+  <button
+    class="btn"
+    type="button"
+    data-important-date-detail-action="edit"
+    data-important-date-id="${encodedId}"
+  >
+    Edit
+  </button>
+
+  ${
+    item.fixed
+      ? ''
+      : `
+        <button
+          class="btn danger"
+          type="button"
+          data-important-date-detail-action="delete"
+          data-important-date-id="${encodedId}"
+        >
+          Delete
+        </button>
+      `
+  }
+</div>
+                  `
+              }
+            </div>
+          </article>
+        `;
+      })
+      .join('');
+
+  openModal(
+    'importantDateDetailsModal'
+  );
+}
+
+document
+  .getElementById(
+    'importantDateDetailsList'
+  )
+  ?.addEventListener(
+    'click',
+    event => {
+      const button =
+        event.target.closest(
+          '[data-important-date-detail-action]'
+        );
+
+      if (!button) return;
+
+      const id =
+        decodeURIComponent(
+          button.dataset
+            .importantDateId
+        );
+
+      const action =
+        button.dataset
+          .importantDateDetailAction;
+
+      closeImportantDateDetails();
+
+      if (action === 'edit') {
+        openImportantDateModal(
+          id
+        );
+
+        return;
+      }
+
+      if (action === 'delete') {
+        deleteImportantDate(
+          id
+        );
+      }
+    }
+  );
+
+document
+  .getElementById(
+    'importantDateDetailsAddBtn'
+  )
+  ?.addEventListener(
+    'click',
+    () => {
+      const date =
+        activeImportantDetailsDate;
+
+      closeImportantDateDetails();
+
+      openImportantDateModalForDate(
+        date || todayISO()
+      );
+    }
+  );
+
+document
+  .getElementById(
+    'importantDateDetailsCloseBtn'
+  )
+  ?.addEventListener(
+    'click',
+    closeImportantDateDetails
+  );
+
+document
+  .getElementById(
+    'importantDateDetailsCancelBtn'
+  )
+  ?.addEventListener(
+    'click',
+    closeImportantDateDetails
+  );
+
+document
+  .getElementById(
+    'importantDateDetailsModal'
+  )
+  ?.addEventListener(
+    'click',
+    event => {
+      if (
+        event.target.id ===
+        'importantDateDetailsModal'
+      ) {
+        closeImportantDateDetails();
+      }
+    }
+  );
 
 function openNoteModal(
   id=''){const item=data.notes.find(n=>n.id===id);noteModalTitle.textContent=item?'Edit note':'Add note';editingNoteId.value=item?.id||'';noteDate.value=item?.date||todayISO();noteType.value=item?.type||'Symptom';noteTitle.value=item?.title||'';noteBody.value=item?.body||'';openModal('noteModal');quickMenu.classList.remove('open')}
@@ -2639,7 +3092,7 @@ function getPregnancyInfo(){const due=parseLocalDate(PREGNANCY.dueDate);
   function updateProgress(id,c,g){
     const el=document.getElementById(id);if(el)el.style.width=percent(c,g)+'%'}
   function sortNewest(a,b){return `${b.date||''}${b.createdAt||''}`.localeCompare(`${a.date||''}${a.createdAt||''}`)}
-  
+
   function getFundTotals(){
   return (data.fundDeposits || []).reduce((totals, item) => {
     const amount = Number(item.amount) || 0;
@@ -3015,15 +3468,47 @@ document
   id
 );
 
-  const item = {
-    id,
-    date: importantDateDate.value,
-    time: importantDateTime.value,
-    title: importantDateTitle.value.trim(),
-    notes: importantDateNotes.value.trim(),
-    color: importantDateColor.value || '#de8f6e',
-    createdAt: (data.importantDates || []).find(date => date.id === id)?.createdAt || Date.now()
-  };
+const existing =
+  getImportantDates().find(
+    date => date.id === id
+  );
+
+const storedExisting =
+  (data.importantDates || []).find(
+    date => date.id === id
+  );
+
+const item = {
+  id,
+
+  date:
+    importantDateDate.value,
+
+  time:
+    importantDateTime.value,
+
+  title:
+    importantDateTitle.value.trim(),
+
+  notes:
+    importantDateNotes.value.trim(),
+
+  color:
+    importantDateColor.value ||
+    '#de8f6e',
+
+  /*
+    Fixed dates can now be edited, but they
+    remain protected from deletion.
+  */
+  fixed:
+    Boolean(existing?.fixed),
+
+  createdAt:
+    storedExisting?.createdAt ||
+    existing?.createdAt ||
+    Date.now()
+};
 
   const index = (data.importantDates || []).findIndex(date => date.id === id);
 
@@ -3259,7 +3744,12 @@ setText('babyIcon','🌱')}else{
   setText('trimesterText',info.trimester);
   const idx=Math.max(0,Math.min(babySizes.length-1,Math.floor((info.week-4)/1.2)));
   setText('babySizeTitle',`Around week ${info.week}`);
-  setText('babySizeText',`Baby is roughly comparable to a ${babySizes[idx]||'small fruit'} right now. Ultrasound record: CRL ${PREGNANCY.crlCm} cm, fetal heart rate ${PREGNANCY.fetalHeartRate} bpm, cervical length ${PREGNANCY.cervicalLengthCm} cm.`);
+setText(
+  'babySizeText',
+  `Baby is roughly comparable to a ${
+    babySizes[idx] || 'small fruit'
+  } right now.`
+);
   setText('babyIcon',info.week<14?'🌱':info.week<28?'🍋':'👶')}
   setText('homeSaved',money(totalSaved));
   setText('homeExpenses',money(totalExpenses));
@@ -3395,44 +3885,98 @@ setText(
     const total=data.expenses.reduce((s,e)=>s+Number(e.amount||0),0),month=todayISO().slice(0,7),monthTotal=data.expenses.filter(e=>(e.date||'').startsWith(month)).reduce((s,e)=>s+Number(e.amount||0),0),by=categoryTotals(),big=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];setText('expenseTotal',money(total));setText('thisMonthExpense',money(monthTotal));setText('expenseCount',data.expenses.length);setText('biggestCategory',big?big[0]:'—');categorySummary.innerHTML=expenseCategories.map(c=>`<div class="category-card"><div class="category-emoji">${c.icon}</div><div class="category-name">${c.name}</div><div class="category-total">${money(by[c.name]||0)}</div></div>`).join('');renderRecordList('expensesList',data.expenses.slice().sort(sortNewest),'expense')}
 function renderAppointments(){renderRecordList('appointmentsList',data.appointments.slice().sort((a,b)=>`${a.date}T${a.time||''}`.localeCompare(`${b.date}T${b.time||''}`)),'appointment')}
 function getImportantDates(){
-  const fixedDates = [
+  const fixedDefaults = [
     {
-      id:'fixed_conception',
-      date:PREGNANCY.conceptionDate,
-      title:'Possible conception date',
-      notes:'Based on the date recorded in the app.',
-      color:'#de8f6e',
-      fixed:true
+      id: 'fixed_conception',
+      date: PREGNANCY.conceptionDate,
+      title: 'Conception date',
+      notes: '',
+      color: '#de8f6e',
+      fixed: true
     },
+
     {
-      id:'fixed_ultrasound',
-      date:PREGNANCY.ultrasoundDate,
-      title:'First ultrasound record',
-      notes:`CRL ${PREGNANCY.crlCm} cm · FHR ${PREGNANCY.fetalHeartRate} bpm · 7w0d by CRL`,
-      color:'#8bbbd9',
-      fixed:true
+      id: 'fixed_ultrasound',
+      date: PREGNANCY.ultrasoundDate,
+      title: 'First ultrasound record',
+
+      notes:
+        `CRL ${PREGNANCY.crlCm} cm · ` +
+        `FHR ${PREGNANCY.fetalHeartRate} bpm · ` +
+        `7w0d by CRL`,
+
+      color: '#8bbbd9',
+      fixed: true
     },
+
     {
-      id:'fixed_due_date',
-      date:PREGNANCY.dueDate,
-      title:'Estimated due date',
-      notes:'Calculated from ultrasound CRL.',
-      color:'#97bd87',
-      fixed:true
+      id: 'fixed_due_date',
+      date: PREGNANCY.dueDate,
+      title: 'Estimated due date',
+      notes: 'Calculated from ultrasound CRL.',
+      color: '#97bd87',
+      fixed: true
     }
   ];
 
-return [
-  ...fixedDates,
-  ...normalizeRecordList(
-    data.importantDates
-  )
-].filter(
-  item =>
-    item &&
-    item.date
-);
+  const storedDates =
+    normalizeRecordList(
+      data.importantDates
+    );
+
+  const fixedIds =
+    new Set(
+      fixedDefaults.map(
+        item => item.id
+      )
+    );
+
+  /*
+    A saved record with a fixed ID acts as
+    an editable override for that default.
+  */
+  const editableFixedDates =
+    fixedDefaults.map(defaultItem => {
+      const savedOverride =
+        storedDates.find(
+          item =>
+            item.id === defaultItem.id
+        );
+
+      return {
+        ...defaultItem,
+        ...(savedOverride || {}),
+
+        /*
+          Keep the original fixed ID and
+          deletion protection.
+        */
+        id: defaultItem.id,
+        fixed: true
+      };
+    });
+
+  const customDates =
+    storedDates
+      .filter(
+        item =>
+          !fixedIds.has(item.id)
+      )
+      .map(item => ({
+        ...item,
+        fixed: false
+      }));
+
+  return [
+    ...editableFixedDates,
+    ...customDates
+  ].filter(
+    item =>
+      item &&
+      item.date
+  );
 }
+
 function renderCalendarMonth(monthDate, importantDates){
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
@@ -3467,11 +4011,16 @@ function renderCalendarMonth(monthDate, importantDates){
       ? `style="background:${hexToRgba(firstColor, .13)}; border-color:${firstColor}"`
       : '';
 
+      const cellClickAction =
+  events.length
+    ? `openImportantDateDetailsForDate('${iso}')`
+    : `openImportantDateModalForDate('${iso}')`;
+
     html += `
       <div
         class="calendar-cell clickable ${iso === today ? 'today' : ''} ${events.length ? 'has-events' : ''}"
         ${cellStyle}
-        onclick="openImportantDateModalForDate('${iso}')"
+        onclick="${cellClickAction}"
       >
         <div class="calendar-date">${day}</div>
 
@@ -3497,64 +4046,181 @@ function renderCalendarMonth(monthDate, importantDates){
 
   return html;
 }
-
 function renderImportantCalendar(){
-  const calendar = document.getElementById('continuousCalendar');
-  const legend = document.getElementById('calendarLegend');
+  const calendar =
+    document.getElementById(
+      'continuousCalendar'
+    );
 
-  if (!calendar || !legend) return;
+  const legend =
+    document.getElementById(
+      'calendarLegend'
+    );
 
-  const importantDates = getImportantDates();
-
-const start = parseLocalDate(CALENDAR_START_DATE);
-start.setHours(0,0,0,0);
-
-  const due = parseLocalDate(PREGNANCY.dueDate);
-  const monthsUntilDue = due
-    ? ((due.getFullYear() - start.getFullYear()) * 12) + (due.getMonth() - start.getMonth()) + 1
-    : 10;
-
-  const monthsToShow = Math.max(10, monthsUntilDue + 1);
-
-  let calendarHtml = '';
-
-  for (let i = 0; i < monthsToShow; i++) {
-    const monthDate = new Date(start.getFullYear(), start.getMonth() + i, 1);
-    calendarHtml += renderCalendarMonth(monthDate, importantDates);
-  }
-
-  calendar.innerHTML = calendarHtml;
-
-    const timelineDates = importantDates
-    .slice()
-    .sort((a,b) => `${a.date}${a.time || ''}`.localeCompare(`${b.date}${b.time || ''}`));
-
-  if (!timelineDates.length) {
-    legend.innerHTML = '<div class="empty">No important dates yet.</div>';
+  if (!calendar || !legend) {
     return;
   }
 
-  legend.innerHTML = timelineDates.map(item => `
-    <div class="record-row">
-      <div class="record-icon" style="background:${item.color || '#de8f6e'}">★</div>
-      <div>
-        <div class="record-title">${escapeHtml(item.title)}</div>
-        <div class="record-meta">
-          ${formatDate(item.date)} ${item.time || ''} · ${item.fixed ? 'Fixed record' : getColorName(item.color)}
-        </div>
-        ${item.notes ? `<div class="record-meta">${escapeHtml(item.notes)}</div>` : ''}
-        ${!item.fixed ? `
-          <div class="mini-actions">
-            <button onclick="openImportantDateModal('${item.id}')">✎</button>
-            <button class="danger" onclick="deleteImportantDate('${item.id}')">×</button>
-          </div>
-        ` : ''}
-      </div>
-      <span class="pill">${item.fixed ? 'Fixed' : 'Saved'}</span>
-    </div>
-  `).join('');
-}
+  const importantDates =
+    getImportantDates();
 
+  const start =
+    parseLocalDate(
+      CALENDAR_START_DATE
+    );
+
+  start.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  const due =
+    parseLocalDate(
+      PREGNANCY.dueDate
+    );
+
+  const monthsUntilDue =
+    due
+      ? (
+          (
+            due.getFullYear() -
+            start.getFullYear()
+          ) * 12
+        ) +
+        (
+          due.getMonth() -
+          start.getMonth()
+        ) + 1
+      : 10;
+
+  const monthsToShow =
+    Math.max(
+      10,
+      monthsUntilDue + 1
+    );
+
+  let calendarHtml = '';
+
+  for (
+    let i = 0;
+    i < monthsToShow;
+    i++
+  ) {
+    const monthDate =
+      new Date(
+        start.getFullYear(),
+        start.getMonth() + i,
+        1
+      );
+
+    calendarHtml +=
+      renderCalendarMonth(
+        monthDate,
+        importantDates
+      );
+  }
+
+  calendar.innerHTML =
+    calendarHtml;
+
+  const timelineDates =
+    importantDates
+      .slice()
+      .sort(
+        (a, b) =>
+          `${a.date}${a.time || ''}`
+            .localeCompare(
+              `${b.date}${b.time || ''}`
+            )
+      );
+
+  if (!timelineDates.length) {
+    legend.innerHTML =
+      '<div class="empty">' +
+      'No important dates yet.' +
+      '</div>';
+
+    return;
+  }
+
+  legend.innerHTML =
+    timelineDates
+      .map(item => `
+        <div class="record-row">
+          <div
+            class="record-icon"
+            style="background:${
+              item.color ||
+              '#de8f6e'
+            }"
+          >
+            ★
+          </div>
+
+          <div>
+            <div class="record-title">
+              ${escapeHtml(item.title)}
+            </div>
+
+            <div class="record-meta">
+              ${formatDate(item.date)}
+
+              ${
+                item.time
+                  ? ` · ${escapeHtml(item.time)}`
+                  : ''
+              }
+            </div>
+
+            ${
+              item.notes
+                ? `
+                  <div class="record-meta">
+                    ${escapeHtml(item.notes)}
+                  </div>
+                `
+                : ''
+            }
+
+            <div class="mini-actions">
+              <button
+                type="button"
+                onclick="openImportantDateModal(
+                  '${item.id}'
+                )"
+                aria-label="Edit ${
+                  escapeHtml(item.title)
+                }"
+              >
+                ✎
+              </button>
+
+              ${
+                item.fixed
+                  ? ''
+                  : `
+                    <button
+                      class="danger"
+                      type="button"
+                      onclick="deleteImportantDate(
+                        '${item.id}'
+                      )"
+                      aria-label="Delete ${
+                        escapeHtml(item.title)
+                      }"
+                    >
+                      ×
+                    </button>
+                  `
+              }
+            </div>
+          </div>
+        </div>
+      `)
+      .join('');
+}
 
 function renderNotes(){renderRecordList('notesList',data.notes.slice().sort(sortNewest),'note')}
 function ensureChecklistType(type){
@@ -3572,6 +4238,7 @@ function ensureChecklistType(type){
       text,
       done: false,
       custom: false,
+      deadline: '',
       createdAt: Date.now()
     }));
   }
@@ -3579,32 +4246,411 @@ function ensureChecklistType(type){
   return type;
 }
 
-function renderChecklist(){
-  const type = ensureChecklistType(checklistType.value);
+function getChecklistSortMode(){
+  const toggle =
+    document.getElementById(
+      'checklistSortToggle'
+    );
 
-  checklist.innerHTML =
-    data.checklist[type].map(item => `
-      <div class="check-row ${item.done ? 'done' : ''}">
-        <div class="check-box" onclick="toggleCheck('${type}','${item.id}')">
-          ${item.done ? '✓' : ''}
+  const value =
+    toggle?.dataset.sortMode ||
+    localStorage.getItem(
+      CHECKLIST_SORT_KEY
+    ) ||
+    'default';
+
+  /*
+    The toggle now has only two modes:
+    original order and soonest deadline.
+  */
+  return value === 'soonest'
+    ? 'soonest'
+    : 'default';
+}
+
+function sortChecklistItems(items){
+  const mode =
+    getChecklistSortMode();
+
+  return items
+    .map((item, index) => ({
+      item,
+      index
+    }))
+    .sort((a, b) => {
+      if (mode === 'default') {
+        return a.index - b.index;
+      }
+
+      const aHasDate =
+        Boolean(a.item.deadline);
+
+      const bHasDate =
+        Boolean(b.item.deadline);
+
+      /*
+        When sorting by deadline,
+        undated entries stay at the bottom.
+      */
+      if (aHasDate !== bHasDate) {
+        return aHasDate ? -1 : 1;
+      }
+
+      if (!aHasDate) {
+        return a.index - b.index;
+      }
+
+      const dateOrder =
+        a.item.deadline.localeCompare(
+          b.item.deadline
+        );
+
+      if (dateOrder !== 0) {
+        return mode === 'latest'
+          ? -dateOrder
+          : dateOrder;
+      }
+
+      return a.index - b.index;
+    })
+    .map(entry => entry.item);
+}
+
+function getChecklistDeadlineInfo(item){
+  if (!item.deadline) {
+    return {
+      label: 'Add deadline',
+      className: 'no-deadline'
+    };
+  }
+
+  const deadline =
+    parseLocalDate(item.deadline);
+
+  const today =
+    parseLocalDate(todayISO());
+
+  const dayMs =
+    24 * 60 * 60 * 1000;
+
+  const daysAway =
+    Math.round(
+      (deadline - today) /
+      dayMs
+    );
+
+  const fullDate =
+    formatDate(item.deadline);
+
+  if (item.done) {
+    return {
+      label:
+        `Deadline: ${fullDate}`,
+
+      className:
+        'deadline-complete'
+    };
+  }
+
+  if (daysAway < 0) {
+    const amount =
+      Math.abs(daysAway);
+
+    return {
+      label:
+        `Overdue by ${amount} ` +
+        `${amount === 1 ? 'day' : 'days'} · ` +
+        fullDate,
+
+      className:
+        'deadline-overdue'
+    };
+  }
+
+  if (daysAway === 0) {
+    return {
+      label:
+        `Due today · ${fullDate}`,
+
+      className:
+        'deadline-today'
+    };
+  }
+
+  if (daysAway === 1) {
+    return {
+      label:
+        `Due tomorrow · ${fullDate}`,
+
+      className:
+        'deadline-soon'
+    };
+  }
+
+  if (daysAway <= 7) {
+    return {
+      label:
+        `Due in ${daysAway} days · ${fullDate}`,
+
+      className:
+        'deadline-soon'
+    };
+  }
+
+  return {
+    label:
+      `Due ${fullDate}`,
+
+    className:
+      'deadline-upcoming'
+  };
+}
+
+function renderChecklist(){
+  const typeSelect =
+    document.getElementById(
+      'checklistType'
+    );
+
+  const list =
+    document.getElementById(
+      'checklist'
+    );
+
+  if (!typeSelect || !list) {
+    return;
+  }
+
+  const type =
+    ensureChecklistType(
+      typeSelect.value
+    );
+
+  const items =
+    sortChecklistItems(
+      data.checklist[type]
+    );
+
+  list.innerHTML =
+    items.map(item => {
+      const deadlineInfo =
+        getChecklistDeadlineInfo(
+          item
+        );
+
+      /*
+        Nothing is rendered when the item
+        does not have a deadline.
+      */
+      const deadlineMarkup =
+        item.deadline
+          ? `
+            <div
+              class="
+                check-deadline-label
+                ${deadlineInfo.className}
+              "
+            >
+              ${escapeHtml(
+                deadlineInfo.label
+              )}
+            </div>
+          `
+          : '';
+
+      return `
+        <div
+          class="
+            check-row
+            ${item.done ? 'done' : ''}
+            ${deadlineInfo.className}
+          "
+        >
+          <button
+            class="check-box"
+            type="button"
+            aria-label="${
+              item.done
+                ? 'Mark incomplete'
+                : 'Mark complete'
+            }"
+            onclick="toggleCheck(
+              '${type}',
+              '${item.id}'
+            )"
+          >
+            <span
+              class="check-mark"
+              aria-hidden="true"
+            >
+              ${item.done ? '✓' : ''}
+            </span>
+          </button>
+
+          <div class="check-main">
+            <div class="check-text">
+              ${escapeHtml(item.text)}
+            </div>
+
+            ${deadlineMarkup}
+          </div>
+
+          <div class="check-actions">
+            <button
+              class="btn check-edit-button"
+              type="button"
+              onclick="openChecklistEditModal(
+                '${type}',
+                '${item.id}'
+              )"
+            >
+              Edit
+            </button>
+
+            <button
+              class="
+                danger
+                check-delete-button
+              "
+              type="button"
+              aria-label="Delete ${
+                escapeHtml(item.text)
+              }"
+              onclick="deleteCheck(
+                '${type}',
+                '${item.id}'
+              )"
+            >
+              ×
+            </button>
+          </div>
         </div>
-        <div class="check-text">${escapeHtml(item.text)}</div>
-        <button class="danger" onclick="deleteCheck('${type}','${item.id}')">×</button>
-      </div>
-    `).join('') +
+      `;
+    }).join('') +
+
     `
-      <div class="row">
-        <input id="newCheckInput" placeholder="Add custom checklist item">
-        <button class="btn primary" onclick="addCheck('${type}')">Add</button>
+      <div class="check-add-card">
+        <div>
+          <label for="newCheckInput">
+            New checklist item
+          </label>
+
+          <input
+            id="newCheckInput"
+            placeholder="Ex. Withdraw matured MP2 Pag-IBIG"
+            autocomplete="off"
+          >
+        </div>
+
+        <button
+          class="
+            btn
+            primary
+            check-add-button
+          "
+          type="button"
+          onclick="addCheck('${type}')"
+        >
+          Add item
+        </button>
       </div>
     `;
 }
+const checklistTypeSelect =
+  document.getElementById(
+    'checklistType'
+  );
 
-document
-  .getElementById('checklistType')
+const checklistSortToggle =
+  document.getElementById(
+    'checklistSortToggle'
+  );
+
+const checklistSortToggleText =
+  document.getElementById(
+    'checklistSortToggleText'
+  );
+
+function applyChecklistSortToggle(
+  mode
+){
+  if (!checklistSortToggle) {
+    return;
+  }
+
+  const normalizedMode =
+    mode === 'soonest'
+      ? 'soonest'
+      : 'default';
+
+  const isActive =
+    normalizedMode === 'soonest';
+
+  checklistSortToggle.dataset.sortMode =
+    normalizedMode;
+
+  checklistSortToggle.classList.toggle(
+    'active',
+    isActive
+  );
+
+  checklistSortToggle.setAttribute(
+    'aria-pressed',
+    String(isActive)
+  );
+
+  if (checklistSortToggleText) {
+    checklistSortToggleText.textContent =
+      isActive
+        ? 'Deadline: soonest'
+        : 'Sort by deadline';
+  }
+}
+
+/*
+  Restore the previously selected mode.
+
+  The removed "latest" option automatically
+  falls back to the normal order.
+*/
+const savedChecklistSort =
+  localStorage.getItem(
+    CHECKLIST_SORT_KEY
+  );
+
+applyChecklistSortToggle(
+  savedChecklistSort === 'soonest'
+    ? 'soonest'
+    : 'default'
+);
+
+checklistTypeSelect
   ?.addEventListener(
     'change',
     renderChecklist
+  );
+
+checklistSortToggle
+  ?.addEventListener(
+    'click',
+    () => {
+      const nextMode =
+        getChecklistSortMode() ===
+        'soonest'
+          ? 'default'
+          : 'soonest';
+
+      localStorage.setItem(
+        CHECKLIST_SORT_KEY,
+        nextMode
+      );
+
+      applyChecklistSortToggle(
+        nextMode
+      );
+
+      renderChecklist();
+    }
   );
 
 function toggleCheck(type, id){
@@ -3618,28 +4664,194 @@ function toggleCheck(type, id){
     renderChecklist();
   }
 }
-
 function addCheck(type){
-  type = ensureChecklistType(type);
+  type =
+    ensureChecklistType(type);
 
-  const input = document.getElementById('newCheckInput');
-  const text = input.value.trim();
+  const input =
+    document.getElementById(
+      'newCheckInput'
+    );
 
-  if (!text) return;
+  const text =
+    input?.value.trim() || '';
+
+  if (!text) {
+    input?.focus();
+    return;
+  }
 
   data.checklist[type].push({
     id: uid('check'),
     text,
     done: false,
     custom: true,
+    deadline: '',
     createdAt: Date.now()
   });
-
-  input.value = '';
 
   saveData('checklist');
   renderChecklist();
 }
+
+function openChecklistEditModal(
+  type,
+  id
+){
+  type =
+    ensureChecklistType(type);
+
+  const item =
+    data.checklist[type].find(
+      checklistItem =>
+        checklistItem.id === id
+    );
+
+  if (!item) {
+    return;
+  }
+
+  const typeInput =
+    document.getElementById(
+      'checklistEditType'
+    );
+
+  const idInput =
+    document.getElementById(
+      'checklistEditId'
+    );
+
+  const textInput =
+    document.getElementById(
+      'checklistEditText'
+    );
+
+  const deadlineInput =
+    document.getElementById(
+      'checklistEditDeadline'
+    );
+
+  if (
+    !typeInput ||
+    !idInput ||
+    !textInput ||
+    !deadlineInput
+  ) {
+    return;
+  }
+
+  typeInput.value = type;
+  idInput.value = id;
+  textInput.value = item.text;
+
+  deadlineInput.value =
+    item.deadline || '';
+
+  updateDateDisplay(
+    'checklistEditDeadline'
+  );
+
+  openModal(
+    'checklistEditModal'
+  );
+
+  setTimeout(
+    () => {
+      textInput.focus();
+      textInput.select();
+    },
+    0
+  );
+}
+
+function clearChecklistEditDeadline(){
+  const input =
+    document.getElementById(
+      'checklistEditDeadline'
+    );
+
+  if (!input) {
+    return;
+  }
+
+  input.value = '';
+
+  updateDateDisplay(
+    'checklistEditDeadline'
+  );
+}
+
+document
+  .getElementById(
+    'checklistEditForm'
+  )
+  ?.addEventListener(
+    'submit',
+    event => {
+      event.preventDefault();
+
+      const type =
+        ensureChecklistType(
+          document
+            .getElementById(
+              'checklistEditType'
+            )
+            ?.value
+        );
+
+      const id =
+        document
+          .getElementById(
+            'checklistEditId'
+          )
+          ?.value;
+
+      const textInput =
+        document.getElementById(
+          'checklistEditText'
+        );
+
+      const deadlineInput =
+        document.getElementById(
+          'checklistEditDeadline'
+        );
+
+      const text =
+        textInput?.value.trim() || '';
+
+      if (!text) {
+        textInput?.focus();
+        return;
+      }
+
+      const item =
+        data.checklist[type].find(
+          checklistItem =>
+            checklistItem.id === id
+        );
+
+      if (!item) {
+        return;
+      }
+
+      item.text = text;
+
+      item.deadline =
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          deadlineInput?.value || ''
+        )
+          ? deadlineInput.value
+          : '';
+
+      saveData('checklist');
+
+      closeModal(
+        'checklistEditModal'
+      );
+
+      renderChecklist();
+    }
+  );
 
 function deleteCheck(type, id){
   type = ensureChecklistType(type);
@@ -3956,6 +5168,9 @@ window.openImportantDateModal =
 window.openImportantDateModalForDate =
   openImportantDateModalForDate;
 
+window.openImportantDateDetailsForDate =
+  openImportantDateDetailsForDate;
+
 window.setImportantDateColor =
   setImportantDateColor;
 
@@ -3982,6 +5197,12 @@ window.toggleCheck =
 
 window.addCheck =
   addCheck;
+
+window.openChecklistEditModal =
+  openChecklistEditModal;
+
+window.clearChecklistEditDeadline =
+  clearChecklistEditDeadline;
 
 window.deleteCheck =
   deleteCheck;

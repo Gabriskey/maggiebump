@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "maggiebump-454ea"
+  },
+  "targets": {
+    "maggiebump-454ea": {
+      "hosting": {
+        "maggiebump": [
+          "maggiebump"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
