@@ -144,6 +144,59 @@ const fundStorageColors = [
 ];
 const babySizes=['poppy seed','sesame seed','lentil','blueberry','raspberry','grape','kumquat','fig','lime','peach','lemon','apple','avocado','pear','mango','banana','carrot','papaya','eggplant','corn','coconut','butternut squash','cabbage','pineapple','lettuce','cauliflower','small pumpkin','watermelon'];
 const checklistTemplates={prepare:['Decide where to give birth','Estimate hospital bill and emergency buffer','Save weekly for pregnancy and hospital funds','Prepare government/insurance documents','Plan who will go with mom during delivery','List emergency contacts','Prepare transportation plan to hospital'],hospital:['Mom clothes and underwear','Baby clothes','Blanket and swaddle','Diapers and wipes','Toiletries','Phone charger','IDs and documents','Cash and cards','Snacks and water'],baby:['Newborn clothes','Diapers','Baby wipes','Blankets','Baby bottles','Baby soap/shampoo','Thermometer','Cotton balls','Changing mat','Baby towel']};
+// Fixed report references only; never add these records to data or SYNC_SECTIONS.
+// Report EDCs do not change PREGNANCY.dueDate or the app's pregnancy calculations.
+const ULTRASOUND_RECORDS = [
+  {
+    label: 'First Ultrasound',
+    date: '2026-05-29',
+    values: [
+      ['Gestational age by CRL', '7w 0d'],
+      ['CRL', '1.0 cm'],
+      ['Fetal heart rate', '131 bpm'],
+      ['Due date estimate', 'January 15, 2027']
+    ],
+    impression: 'Live singleton uterine pregnancy',
+    note: 'LMP shown: April 6, 2026. Due date estimated from 7w 0d by CRL on May 29, 2026.'
+  },
+  {
+    label: 'Anatomy Scan',
+    date: '2026-09-05',
+    values: [
+      ['Gestational age by LMP', '21w 5d'],
+      ['Average ultrasound age', '21w 2d'],
+      ['Fetal heart rate', '141 bpm'],
+      ['Estimated fetal weight', '442 g'],
+      ['Number of fetuses', 'Singleton'],
+      ['Presentation', 'Cephalic'],
+      ['Placenta', 'Posterofundal, Grade 1'],
+      ['Amniotic fluid', 'Adequate'],
+      ['Single vertical pocket', '6.0 cm']
+    ],
+    impression: 'Estimated fetal weight is appropriate for gestational age by LMP.',
+    biometry: [
+      ['BPD', '4.8 cm', '20w 5d'],
+      ['HC', '18.6 cm', '21w 0d'],
+      ['AC', '17.1 cm', '22w 1d'],
+      ['FL', '3.6 cm', '21w 3d']
+    ],
+    reportDates: [
+      ['LMP EDC shown on report', 'January 11, 2027'],
+      ['Ultrasonographic EDC', 'January 14, 2027']
+    ],
+    remark: 'No structural anomaly seen at the time of scan.',
+    anatomy: [
+      'Face/coronal', 'Orbits', 'Nose/lips', 'Midline profile',
+      'Ventricles', 'Choroid plexus', 'Cerebellum',
+      'Spine/posterior fossae/bony elements/overlying skin',
+      'Four-chamber heart', 'Aortic outflow', 'Pulmonary outflow',
+      'Stomach', 'Cord insertion', 'Three-vessel cord',
+      'Right and left kidneys', 'Four limbs', 'Long bones',
+      'Hands/fingers/thumbs', 'Feet/toes'
+    ]
+  }
+];
+
 let data=loadData();
 function defaultData(){
   return {
@@ -3726,7 +3779,50 @@ function render(){
   renderImportantCalendar();
 }
 function renderSelects(){if(expenseCategory&&!expenseCategory.children.length)expenseCategory.innerHTML=expenseCategories.map(c=>`<option>${c.name}</option>`).join('')}
+function renderUltrasoundHistory(){
+  const container = document.getElementById('ultrasoundHistory');
+  // These references never change at runtime. Preserve expanded details on rerenders.
+  if (!container || container.children.length) return;
+
+  const renderValues = values => values.map(([label, value]) => `
+    <div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>
+  `).join('');
+
+  container.innerHTML = ULTRASOUND_RECORDS.map((record, index) => `
+    <article class="card ultrasound-card" aria-labelledby="ultrasound-title-${index}">
+      <header class="toolbar">
+        <h3 id="ultrasound-title-${index}">${escapeHtml(record.label)}</h3>
+        <time class="pill" datetime="${escapeHtml(record.date)}">${formatDate(record.date)}</time>
+      </header>
+      <dl class="ultrasound-values">${renderValues(record.values)}</dl>
+      <p class="ultrasound-report-note"><strong>Report impression:</strong> ${escapeHtml(record.impression)}</p>
+      ${record.note ? `<p class="subtitle ultrasound-report-note">${escapeHtml(record.note)}</p>` : ''}
+      ${record.biometry ? `
+        <section class="ultrasound-biometry" aria-label="Biometry">
+          <h4>Biometry</h4>
+          <dl class="ultrasound-values">
+            ${record.biometry.map(([label, size, age]) => `
+              <div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(size)} <span>— ${escapeHtml(age)}</span></dd></div>
+            `).join('')}
+          </dl>
+        </section>
+        <details class="ultrasound-details">
+          <summary>View report details</summary>
+          <dl class="ultrasound-values">${renderValues(record.reportDates)}</dl>
+          <p class="ultrasound-report-note"><strong>Advanced anatomy report remark:</strong> “${escapeHtml(record.remark)}”</p>
+          <h4>Anatomy summary</h4>
+          <p class="subtitle">Documented as appearing normal on the ultrasound report.</p>
+          <ul class="ultrasound-anatomy">
+            ${record.anatomy.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+          </ul>
+        </details>
+      ` : ''}
+    </article>
+  `).join('');
+}
+
 function renderHome(){
+renderUltrasoundHistory();
 const info = getPregnancyInfo();
 const fundTotals = getFundTotals();
 const totalExpenses = data.expenses.reduce((s,e)=>s+Number(e.amount||0),0);

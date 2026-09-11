@@ -91,6 +91,9 @@ state only if the pending section version has not changed.
 
 ## UI / CODE RULES
 
+- Home's ultrasound history uses `ULTRASOUND_RECORDS` as fixed/reference data,
+  separate from saved state and Firebase sync. Report EDCs must not override the
+  app's working due date (`PREGNANCY.dueDate`, January 15, 2027).
 - Preserve the current MaggieBump design language.
 - Prefer small targeted edits and reuse existing components, modals, and patterns.
 - Avoid unrelated refactors.

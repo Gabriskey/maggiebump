@@ -308,31 +308,15 @@
         </div>
           <div id="nextAppointmentBox" class="empty">No upcoming appointments yet.</div>
         </div></section>
-          <section class="card">
-            <div class="toolbar">
-            <h2>Ultrasound Details</h2>
-            <span class="pill">Fixed record</span>
-          </div><section class="stats"><div class="stat">
-            <div class="label">Ultrasound Date</div>
-            <div class="value">May 29</div>
-            <div class="hint">2026</div>
-          </div>
-            <div class="stat"><div class="label">Age by CRL</div>
-            <div class="value">7w 0d</div>
-            <div class="hint">CRL: 1.0 cm</div>
-          </div>
-            <div class="stat"><div class="label">Fetal Heart Rate
-
-            </div>
-            <div class="value">131</div><div class="hint">beats/min</div>
-          </div>
-            <div class="stat">
-              <div class="label">Impression</div><div class="value">Live</div>
-              <div class="hint">Singleton uterine pregnancy</div>
-            </div>
-          </section>
-
-            <p class="subtitle" style="margin-top:12px">LMP shown: April 6, 2026. Due date estimate: January 15, 2027, calculated from 7w0d by CRL on May 29, 2026.</p></section><section class="grid-2"><div class="card"><div class="toolbar"><h2>Fund Progress</h2><button class="btn" onclick="setPage('fundPage')">Open funds</button></div><div class="form"><div class="progress-wrap"><div class="progress-top"><span>Pregnancy Fund</span><span id="pregFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="pregFundProgress"></div></div></div><div class="progress-wrap"><div class="progress-top"><span>Hospital Bill Fund</span><span id="hospitalFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="hospitalFundProgress"></div></div></div></div></div><div class="card"><div class="toolbar"><h2>Recent Expenses</h2><button class="btn" onclick="openExpenseModal()">Add</button></div><div id="recentExpensesList" class="record-list"></div></div></section></section>
+          <section aria-labelledby="ultrasoundHistoryHeading">
+  <div class="toolbar">
+    <h2 id="ultrasoundHistoryHeading">Ultrasound History</h2>
+    <span class="pill">Fixed reference records</span>
+  </div>
+  <p class="subtitle ultrasound-history-note">App working due date: January 15, 2027. Dates in individual reports are retained for reference.</p>
+  <div id="ultrasoundHistory" class="ultrasound-history-grid"></div>
+</section>
+<section class="grid-2"><div class="card"><div class="toolbar"><h2>Fund Progress</h2><button class="btn" onclick="setPage('fundPage')">Open funds</button></div><div class="form"><div class="progress-wrap"><div class="progress-top"><span>Pregnancy Fund</span><span id="pregFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="pregFundProgress"></div></div></div><div class="progress-wrap"><div class="progress-top"><span>Hospital Bill Fund</span><span id="hospitalFundLabel">₱0 / ₱0</span></div><div class="progress"><div class="progress-fill" id="hospitalFundProgress"></div></div></div></div></div><div class="card"><div class="toolbar"><h2>Recent Expenses</h2><button class="btn" onclick="openExpenseModal()">Add</button></div><div id="recentExpensesList" class="record-list"></div></div></section></section>
 <section id="fundPage" class="page">
   <section class="stats"><div class="stat">
     <div class="label">Pregnancy Goal</div>

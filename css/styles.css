@@ -4348,3 +4348,111 @@ canvas {
   font-size: 1.16rem;
   line-height: 1.2;
 }
+
+/* Fixed ultrasound report history on Home */
+.ultrasound-history-note {
+  margin-bottom: 18px;
+}
+
+.ultrasound-history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+}
+
+.ultrasound-card {
+  min-width: 0;
+}
+
+.ultrasound-card h3 {
+  font-size: 1.1rem;
+  font-weight: 650;
+}
+
+.ultrasound-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.ultrasound-values dt {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.ultrasound-values dd {
+  margin: 3px 0 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.ultrasound-values dd span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.ultrasound-report-note {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.ultrasound-biometry,
+.ultrasound-details {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ultrasound-card h4 {
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.ultrasound-details summary {
+  cursor: pointer;
+  color: var(--accent-cocoa);
+  font-weight: 650;
+  padding: 6px 0;
+}
+
+.ultrasound-details summary:focus-visible {
+  outline: 2px solid var(--accent-cocoa);
+  outline-offset: 4px;
+}
+
+.ultrasound-details[open] summary,
+.ultrasound-details .ultrasound-report-note {
+  margin-bottom: 16px;
+}
+
+.ultrasound-anatomy {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  columns: 2;
+  column-gap: 24px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.ultrasound-anatomy li {
+  break-inside: avoid;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 900px) {
+  .ultrasound-history-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ultrasound-anatomy {
+    columns: 1;
+  }
+}
